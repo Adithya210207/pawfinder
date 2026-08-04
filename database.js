@@ -35,7 +35,7 @@ function createMockDb() {
     { id: 's20', name: 'Madukkarai Street Animal Project', emoji: '🌟', address: 'Madukkarai, Coimbatore', city: 'Coimbatore', phone: '+91 422 264 3377', email: 'team@madukkaraistreet.org', hours: '8AM-5PM', distance_km: 14.1, dogs_available: 19, dogs_rehomed: 56, volunteers: 15, rating: 4.1, verified: 1, tags: 'Sterilization,Feeding,Verified' }
   ];
 
-  const demoUser = { id: 'demo-user', name: 'Adithya Kumar', email: 'demo@pawfinder.in', phone: '+91 9876543210', city: 'Coimbatore', password_hash: '$2a$10$wT0L.XgE13m6', avatar_initials: 'AK', paw_points: 240, is_admin: 1 };
+  const demoUser = { id: 'demo-user', name: 'Adithya Kumar', email: 'demo@pawfinder.in', phone: '+91 9876543210', city: 'Coimbatore', password_hash: bcrypt.hashSync('demo123', 10), avatar_initials: 'AK', paw_points: 240, is_admin: 1 };
 
   return {
     pragma: () => {},
