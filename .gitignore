@@ -1,0 +1,30 @@
+# Node modules
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build and package outputs
+dist/
+unpacked/
+PawFinder-1.0.0-win-x64/
+*.exe
+*.zip
+
+# Database temporary files & logs
+*.db-shm
+*.db-wal
+server.log
+
+# Environment variables
+.env
+.env.local
+
+# IDE / Editor settings
+.vscode/
+.idea/
+.claude/
+
+# OS generated files
+Thumbs.db
+Desktop.ini

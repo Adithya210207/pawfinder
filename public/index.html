@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PawFinder — Find a Companion</title>
+  <meta name="description" content="PawFinder helps you adopt, foster, and care for dogs in Coimbatore. Find your perfect companion today.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading" style="display:none">
+      <div class="spinner"></div>
+      <div class="loading-text" id="loading-text">Loading...</div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- ═══ LOGIN ═══ -->
+    <div class="page active" id="page-login">
+      <div class="auth-container">
+        <div class="auth-logo">🐾</div>
+        <div class="auth-title">PawFinder</div>
+        <div class="auth-sub">Find your perfect companion</div>
+        <div class="auth-form">
+          <div class="auth-error" id="login-error"></div>
+          <div>
+            <div class="field-label">Email</div>
+            <input class="input-field" type="email" id="login-email" placeholder="you@email.com">
+          </div>
+          <div>
+            <div class="field-label">Password</div>
+            <input class="input-field" type="password" id="login-password" placeholder="••••••••">
+          </div>
+          <button class="btn-primary" id="login-btn">Sign In</button>
+          <button class="btn-secondary" id="goto-register-btn">Create Account</button>
+        </div>
+        <div class="demo-box">
+          <div class="label">Demo credentials</div>
+          <div class="creds">demo@pawfinder.in · demo123</div>
+        </div>
+        <div class="auth-switch">Quick access: <a id="demo-login-btn">tap to auto-fill & sign in</a></div>
+      </div>
+    </div>
+
+    <!-- ═══ REGISTER ═══ -->
+    <div class="page" id="page-register">
+      <div class="page-header">
+        <div class="btn-back" data-back="page-login">←</div>
+        <div class="page-title">Create Account</div>
+      </div>
+      <div style="max-width:420px;margin:0 auto;padding:20px">
+        <div class="auth-error" id="register-error"></div>
+        <div class="auth-form">
+          <div><div class="field-label">Full Name</div><input class="input-field" type="text" id="reg-name" placeholder="Your Name"></div>
+          <div><div class="field-label">Email</div><input class="input-field" type="email" id="reg-email" placeholder="you@email.com"></div>
+          <div><div class="field-label">Phone</div><input class="input-field" type="tel" id="reg-phone" placeholder="+91 9XXXXXXXXX"></div>
+          <div><div class="field-label">City</div><input class="input-field" type="text" id="reg-city" placeholder="Coimbatore"></div>
+          <div><div class="field-label">Password</div><input class="input-field" type="password" id="reg-password" placeholder="Min 6 characters"></div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px">
+            <div style="font-size:13px;color:var(--text-secondary);margin-bottom:4px">By creating an account you agree to our</div>
+            <div style="font-size:13px;color:var(--blue-text)">Terms of Service & Privacy Policy</div>
+          </div>
+          <button class="btn-primary" id="register-btn">Create Account</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ HOME ═══ -->
+    <div class="page" id="page-home">
+      <div class="main-content">
+        <!-- ── Full-width band ── -->
+        <div class="home-header">
+          <div>
+            <div class="greeting-sub" id="greeting-text">Hello, there 👋</div>
+            <div class="greeting-title">Find your best friend</div>
+          </div>
+          <div class="header-actions">
+            <div class="btn-icon" id="notif-btn">🔔<div class="notif-dot" id="notif-dot" style="display:none"></div></div>
+            <div class="avatar-btn" id="user-avatar">AD</div>
+          </div>
+        </div>
+
+        <!-- Adoption Hero -->
+        <div class="adopt-hero">
+          <div class="adopt-hero-paw">🐾</div>
+          <div class="adopt-hero-eyebrow">CHANGE A LIFE TODAY</div>
+          <div class="adopt-hero-title">A loyal companion is waiting for you</div>
+          <div class="adopt-hero-text"><span id="hero-dog-count">24</span> rescued dogs near you are ready for a forever home. They don't need much — just you.</div>
+          <div class="adopt-hero-actions">
+            <button class="adopt-hero-btn" id="hero-browse-btn">Meet the dogs →</button>
+            <div class="adopt-hero-trust">❤️ <b>847</b> dogs rehomed in 2024</div>
+          </div>
+        </div>
+
+        <!-- Urgent -->
+        <div class="urgent-banner" id="urgent-banner" style="display:none"></div>
+
+        <!-- Search -->
+        <div class="search-bar">
+          <span class="search-icon">🔍</span>
+          <input type="text" placeholder="Search by breed, age, location..." id="search-input">
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-row" id="filter-row">
+          <div class="chip active" data-filter="all">All</div>
+          <div class="chip" data-filter="puppy">🐶 Puppies</div>
+          <div class="chip" data-filter="adult">Adult</div>
+          <div class="chip" data-filter="senior">Senior</div>
+          <div class="chip" data-filter="female">♀ Female</div>
+          <div class="chip" data-filter="male">♂ Male</div>
+          <div class="chip" data-filter="vaccinated">💉 Vaccinated</div>
+          <div class="chip" data-filter="small">Small breed</div>
+          <div class="chip" data-filter="large">Large breed</div>
+        </div>
+
+        <!-- ── Two-column area (desktop) / stacked (mobile) ── -->
+        <div class="home-cols">
+          <div class="home-main">
+            <!-- Featured -->
+            <div class="section-title" style="padding:0 20px 14px">Featured dog</div>
+            <div id="featured-dog"></div>
+
+            <!-- Recently Added -->
+            <div class="section-header">
+              <div class="section-title">Recently added</div>
+              <div class="section-see-all" id="see-all-dogs">See all →</div>
+            </div>
+            <div class="h-scroll" id="recent-dogs"></div>
+
+            <!-- Stories -->
+            <div class="section-header">
+              <div class="section-title">🌟 Success stories</div>
+              <div class="section-see-all" data-nav="4">More →</div>
+            </div>
+            <div class="h-scroll" style="margin-bottom:4px">
+              <div class="story-card">
+                <div class="story-top"><div class="story-emoji">🐕</div><div><div class="story-name">Bruno</div><div class="story-adopted">Adopted Jan 2024 · R.S. Puram</div></div></div>
+                <div class="story-text">"Bruno settled within 3 days and now greets us at the door every evening. Best decision ever!"</div>
+                <div class="story-author">— Priya S. & family</div>
+              </div>
+              <div class="story-card">
+                <div class="story-top"><div class="story-emoji">🐩</div><div><div class="story-name">Coco</div><div class="story-adopted">Adopted Jan 2024 · Gandhipuram</div></div></div>
+                <div class="story-text">"She was house-trained from day one. Coco transformed our apartment into a home full of warmth."</div>
+                <div class="story-author">— Kavitha L.</div>
+              </div>
+              <div class="story-card">
+                <div class="story-top"><div class="story-emoji">🦮</div><div><div class="story-name">Rocky</div><div class="story-adopted">Adopted Dec 2023 · Saibaba Colony</div></div></div>
+                <div class="story-text">"Rocky is protective, loyal, and incredible with our kids. The guardian we didn't know we needed."</div>
+                <div class="story-author">— Suresh P. & family</div>
+              </div>
+              <div class="story-card">
+                <div class="story-top"><div class="story-emoji">🐕‍🦺</div><div><div class="story-name">Luna</div><div class="story-adopted">Adopted Apr 2024 · Peelamedu</div></div></div>
+                <div class="story-text">"Luna loves beach walks almost as much as we do. She picked us as much as we picked her."</div>
+                <div class="story-author">— Nisha T.</div>
+              </div>
+            </div>
+
+            <!-- Tips -->
+            <div class="section-header">
+              <div class="section-title">Quick tips</div>
+              <div class="section-see-all" data-nav="4">See all →</div>
+            </div>
+            <div class="tips-row" id="tips-row"></div>
+
+            <!-- Map -->
+            <div class="section-header">
+              <div class="section-title">Shelters near you</div>
+              <div class="section-see-all" data-nav="1">View all →</div>
+            </div>
+            <div class="map-preview" id="map-preview">
+              <div class="map-grid"></div>
+              <div class="map-pin">📍</div>
+              <div class="map-label" id="map-label">Shelters across Coimbatore</div>
+            </div>
+          </div>
+
+          <div class="home-aside">
+            <!-- Weather -->
+            <div class="weather-widget">
+              <div class="weather-emoji">🌤️</div>
+              <div>
+                <div class="weather-temp">31°C</div>
+                <div class="weather-desc">Partly cloudy · Coimbatore</div>
+                <div class="weather-tip">🐾 Good morning walk weather!</div>
+              </div>
+              <div class="weather-right">
+                <div class="feels">Feels like</div>
+                <div class="feels-val">33°C</div>
+                <div class="humidity">Humidity 74%</div>
+              </div>
+            </div>
+
+            <!-- Impact -->
+            <div class="impact-card">
+              <div class="impact-title">🐾 PawFinder impact in 2024</div>
+              <div class="impact-grid">
+                <div class="impact-item"><div class="impact-num">847</div><div class="impact-label">Dogs rehomed</div></div>
+                <div class="impact-item"><div class="impact-num">1,203</div><div class="impact-label">Rescues made</div></div>
+                <div class="impact-item"><div class="impact-num">4,290</div><div class="impact-label">Volunteers</div></div>
+                <div class="impact-item"><div class="impact-num">₹28L</div><div class="impact-label">Raised</div></div>
+              </div>
+            </div>
+
+            <!-- SOS -->
+            <div class="sos-banner" id="sos-banner">
+              <div class="sos-emoji">🚨</div>
+              <div>
+                <div class="sos-title">Found an injured stray?</div>
+                <div class="sos-sub">Tap to report & connect with a rescue team</div>
+              </div>
+              <div class="sos-arrow">›</div>
+            </div>
+
+            <!-- Poll -->
+            <div class="poll-card">
+              <div class="poll-question">🗳️ What's your top reason for adopting?</div>
+              <div class="poll-option" data-poll="0"><div class="poll-label">Companionship</div><div class="poll-bar-bg"><div class="poll-bar-fill" style="width:62%"></div></div><div class="poll-pct">62%</div></div>
+              <div class="poll-option" data-poll="1"><div class="poll-label">Save a life</div><div class="poll-bar-bg"><div class="poll-bar-fill" style="width:24%"></div></div><div class="poll-pct">24%</div></div>
+              <div class="poll-option" data-poll="2"><div class="poll-label">Family pet</div><div class="poll-bar-bg"><div class="poll-bar-fill" style="width:10%"></div></div><div class="poll-pct">10%</div></div>
+              <div class="poll-option" data-poll="3"><div class="poll-label">Other</div><div class="poll-bar-bg"><div class="poll-bar-fill" style="width:4%"></div></div><div class="poll-pct">4%</div></div>
+              <div class="poll-meta">2,847 votes · Poll closes Sunday</div>
+            </div>
+
+            <!-- Quiz -->
+            <div class="quiz-card" id="quiz-card">
+              <div class="quiz-top">
+                <div class="quiz-label">🧠 Dog knowledge quiz</div>
+                <div class="quiz-progress" id="quiz-progress"></div>
+              </div>
+              <div class="quiz-question" id="quiz-question">Loading question…</div>
+              <div id="quiz-options"></div>
+              <div class="quiz-explain" id="quiz-explain"></div>
+              <button class="quiz-next" id="quiz-next" style="display:none">Next question →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Full-width dog gallery ── -->
+        <div class="section-header">
+          <div class="section-title">Available near you</div>
+        </div>
+        <div class="dog-grid" id="dog-grid"></div>
+      </div>
+    </div>
+
+    <!-- ═══ DOG PROFILE ═══ -->
+    <div class="page" id="page-profile">
+      <div class="page-header">
+        <div class="btn-back" id="profile-back">←</div>
+        <div class="page-title">Dog profile</div>
+        <div class="heart-btn" id="heart-btn">🤍</div>
+      </div>
+      <div class="main-content" id="profile-content"></div>
+      <div class="profile-footer">
+        <button class="btn-chat" id="profile-chat-btn">💬 Chat</button>
+        <button class="btn-adopt" id="profile-adopt-btn">Start adoption →</button>
+      </div>
+    </div>
+
+    <!-- ═══ CHAT ═══ -->
+    <div class="page" id="page-chat">
+      <div class="chat-container">
+        <div class="page-header">
+          <div class="btn-back" id="chat-back">←</div>
+          <div class="shelter-icon" style="width:36px;height:36px;font-size:18px">🏥</div>
+          <div class="chat-header-info">
+            <div class="chat-shelter-name" id="chat-shelter-name">Shelter</div>
+            <div class="chat-online">🟢 Online · AI-assisted</div>
+          </div>
+        </div>
+        <div class="quick-replies" id="quick-replies">
+          <div class="qr-btn" data-msg="How do I schedule a visit?">Schedule visit?</div>
+          <div class="qr-btn" data-msg="Is the dog vaccinated?">Vaccination?</div>
+          <div class="qr-btn" data-msg="What are the adoption fees?">Fees?</div>
+          <div class="qr-btn" data-msg="Can I foster first?">Foster first?</div>
+          <div class="qr-btn" data-msg="What food does the dog eat?">Diet?</div>
+        </div>
+        <div class="chat-messages" id="chat-messages"></div>
+        <div class="chat-input-bar">
+          <input class="chat-input" id="chat-input" placeholder="Message the shelter...">
+          <button class="chat-send-btn" id="chat-send-btn">➤</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ ADOPTION FORM ═══ -->
+    <div class="page" id="page-adoption">
+      <div class="page-header">
+        <div class="btn-back" id="adoption-back">←</div>
+        <div class="page-title">Adoption application</div>
+      </div>
+      <div class="main-content">
+        <div class="stepper">
+          <div class="step-item"><div class="step-circle done">✓</div><div class="step-label">Info</div></div>
+          <div class="step-line done"></div>
+          <div class="step-item"><div class="step-circle active">2</div><div class="step-label active">Home</div></div>
+          <div class="step-line"></div>
+          <div class="step-item"><div class="step-circle pending">3</div><div class="step-label">Docs</div></div>
+          <div class="step-line"></div>
+          <div class="step-item"><div class="step-circle pending">4</div><div class="step-label">Review</div></div>
+        </div>
+
+        <div class="adopt-dog-card" id="adopt-dog-card"></div>
+
+        <div class="checklist-card">
+          <div class="checklist-title">✅ Pre-adoption checklist</div>
+          <div class="checklist-item">☑ Have you spoken to all family members?</div>
+          <div class="checklist-item">☑ Is your landlord okay with pets?</div>
+          <div class="checklist-item">☑ Do you have a vet in mind?</div>
+          <div class="checklist-item">☑ Budget for food, vet visits, grooming?</div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">Home environment</div>
+          <div class="field-label">Type of residence</div>
+          <div class="chip-group" data-group="residence">
+            <div class="choice-chip selected">Apartment</div>
+            <div class="choice-chip">House</div>
+            <div class="choice-chip">Villa</div>
+            <div class="choice-chip">Farmhouse</div>
+          </div>
+
+          <div class="field-label">Do you have outdoor space?</div>
+          <div class="chip-group" data-group="outdoor">
+            <div class="choice-chip selected">Yes</div>
+            <div class="choice-chip">No</div>
+            <div class="choice-chip">Shared balcony</div>
+          </div>
+
+          <div class="field-label">Experience with dogs</div>
+          <div class="chip-group" data-group="experience">
+            <div class="choice-chip selected">First time</div>
+            <div class="choice-chip">Some</div>
+            <div class="choice-chip">Experienced</div>
+          </div>
+
+          <div class="two-col">
+            <div><div class="field-label">Other pets</div><select class="input-field" id="adopt-pets"><option>None</option><option>1 dog</option><option>1 cat</option><option>Multiple</option></select></div>
+            <div><div class="field-label">Children at home</div><select class="input-field" id="adopt-children"><option>None</option><option>Yes, 1</option><option>2</option><option>3+</option></select></div>
+          </div>
+
+          <div class="field-label">Daily hours dog will be alone</div>
+          <select class="input-field" id="adopt-alone" style="margin-bottom:18px"><option value="" disabled selected>Select range...</option><option>0-2 hours</option><option>2-4 hours</option><option>4-6 hours</option><option>6-8 hours</option><option>8+ hours</option></select>
+
+          <div class="field-label">Why do you want to adopt?</div>
+          <textarea class="input-field" id="adopt-reason" rows="3" placeholder="Tell us about yourself and why you want to give this dog a forever home..." style="margin-bottom:18px"></textarea>
+        </div>
+
+        <div style="padding:0 20px 8px"><div style="border-top:1px solid var(--border);margin-bottom:16px"></div></div>
+
+        <div class="form-section">
+          <div class="form-section-title">Required documents</div>
+          <div class="doc-note">Securely shared with the shelter for verification and kept on file after approval. Accepted: JPG, PNG or PDF · max 8 MB each.</div>
+
+          <label class="doc-row" for="doc-gov">
+            <div class="doc-icon">🪪</div>
+            <div class="doc-meta"><div class="doc-name">Government ID</div><div class="doc-sub">Aadhaar / Voter ID / Passport</div></div>
+            <div class="doc-status pending" id="doc-gov-status">Choose file</div>
+            <input type="file" id="doc-gov" class="doc-input" accept="image/*,.pdf">
+          </label>
+
+          <label class="doc-row" for="doc-address">
+            <div class="doc-icon">🏠</div>
+            <div class="doc-meta"><div class="doc-name">Address proof</div><div class="doc-sub">Utility bill / rental agreement</div></div>
+            <div class="doc-status pending" id="doc-address-status">Choose file</div>
+            <input type="file" id="doc-address" class="doc-input" accept="image/*,.pdf">
+          </label>
+
+          <label class="doc-row" for="doc-income">
+            <div class="doc-icon">💼</div>
+            <div class="doc-meta"><div class="doc-name">Income proof</div><div class="doc-sub">Salary slip / bank statement</div></div>
+            <div class="doc-status pending" id="doc-income-status">Choose file</div>
+            <input type="file" id="doc-income" class="doc-input" accept="image/*,.pdf">
+          </label>
+
+          <label class="doc-row" for="doc-photos">
+            <div class="doc-icon">📷</div>
+            <div class="doc-meta"><div class="doc-name">Home photos</div><div class="doc-sub">3-5 photos of your living space</div></div>
+            <div class="doc-status pending" id="doc-photos-status">Choose files</div>
+            <input type="file" id="doc-photos" class="doc-input" accept="image/*" multiple>
+          </label>
+        </div>
+      </div>
+      <div class="adoption-footer">
+        <button class="btn-primary" id="submit-adoption-btn">Submit Application →</button>
+        <div class="save-later" id="save-draft-btn">Save draft & continue later</div>
+      </div>
+    </div>
+
+    <!-- ═══ SHELTERS ═══ -->
+    <div class="page" id="page-shelters">
+      <div class="main-content">
+        <div style="padding:20px 20px 16px">
+          <div class="shelters-title">Shelters 🏥</div>
+          <div class="search-bar" style="margin:0 0 14px">
+            <span class="search-icon">🔍</span>
+            <input type="text" placeholder="Search shelters..." id="shelter-search">
+          </div>
+          <div class="filter-row" id="shelter-filters" style="padding:0 0 4px">
+            <div class="chip active" data-filter="all">All</div>
+            <div class="chip" data-filter="verified">Verified</div>
+            <div class="chip" data-filter="near">Nearest</div>
+            <div class="chip" data-filter="most_dogs">Most dogs</div>
+          </div>
+        </div>
+        <div class="shelter-stats-grid" id="shelter-stats"></div>
+        <div style="padding:0 20px" id="shelter-list"></div>
+      </div>
+    </div>
+
+    <!-- ═══ APPLICATIONS ═══ -->
+    <div class="page" id="page-applications">
+      <div class="main-content">
+        <div style="padding:20px 20px 0">
+          <div class="shelters-title">My Applications 📋</div>
+          <div style="font-size:14px;color:var(--text-secondary);margin-bottom:20px" id="app-count-text">No applications yet</div>
+        </div>
+        <div id="applications-list"></div>
+        <div style="padding:0 20px 20px">
+          <div class="info-card">
+            <div style="font-size:22px;margin-bottom:10px">📋</div>
+            <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:600;margin-bottom:8px">How the process works</div>
+            <div style="font-size:13px;color:var(--text-secondary);line-height:1.7">Submit application → Shelter review (48h) → Home visit scheduled → Approval & paperwork → Meet & greet → Adoption day 🎉</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ FOSTER ═══ -->
+    <div class="page" id="page-foster">
+      <div class="main-content">
+        <div style="padding:20px 20px 16px">
+          <div class="shelters-title">Foster a Dog 🐕</div>
+          <div style="font-size:14px;color:var(--text-secondary);margin-bottom:4px">Give a dog a temporary home while they await adoption</div>
+        </div>
+        <div class="foster-hero" id="foster-hero"></div>
+        <div class="foster-info-card">
+          <div class="foster-info-title">What fostering involves</div>
+          <div class="foster-info-item">🏠  Host for 2-8 weeks on average</div>
+          <div class="foster-info-item">🍚  Food & basic supplies provided by shelter</div>
+          <div class="foster-info-item">💊  All medical costs covered</div>
+          <div class="foster-info-item">📞  24/7 shelter support via WhatsApp</div>
+          <div class="foster-info-item">🚗  Free pickup & drop service</div>
+        </div>
+        <div style="padding:0 20px 12px"><div class="section-title">Dogs needing foster care</div></div>
+        <div style="padding:0 20px" id="foster-list"></div>
+        <div style="padding:0 20px 12px"><div class="section-title">Frequently asked</div></div>
+        <div style="padding:0 20px" id="foster-faq"></div>
+        <div style="padding:0 20px 24px;margin-top:12px">
+          <button class="btn-primary" id="foster-register-btn">Register as a foster parent</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ LEARN ═══ -->
+    <div class="page" id="page-learn">
+      <div class="main-content">
+        <div style="padding:20px 20px 0">
+          <div class="learn-title">Learn 💚</div>
+          <div class="learn-sub">Stories, guides and tips for dog welfare</div>
+        </div>
+        <div class="pinned-article" id="pinned-article" data-article="a6"></div>
+        <div class="vol-link-card" id="vol-link">
+          <div class="vol-link-emoji">🙋</div>
+          <div>
+            <div class="vol-link-title">Volunteer with us</div>
+            <div class="vol-link-sub">Weekend slots available · No experience needed</div>
+          </div>
+          <div class="vol-link-arrow">›</div>
+        </div>
+        <div class="filter-row" id="article-filters" style="padding:0 20px 16px">
+          <div class="chip active" data-filter="all">All</div>
+          <div class="chip" data-filter="Tips">Tips</div>
+          <div class="chip" data-filter="Health">Health</div>
+          <div class="chip" data-filter="Story">Stories</div>
+          <div class="chip" data-filter="Awareness">Awareness</div>
+          <div class="chip" data-filter="Training">Training</div>
+          <div class="chip" data-filter="Nutrition">Nutrition</div>
+        </div>
+        <div style="padding:0 20px" id="articles-list"></div>
+      </div>
+    </div>
+
+    <!-- ═══ ARTICLE READER ═══ -->
+    <div class="page" id="page-article">
+      <div class="page-header">
+        <div class="btn-back" id="article-back">←</div>
+        <div class="page-title" id="article-page-title">Article</div>
+        <div class="page-header-action" id="bookmark-btn">🔖</div>
+      </div>
+      <div class="main-content" id="article-content-wrapper"></div>
+    </div>
+
+    <!-- ═══ VOLUNTEER ═══ -->
+    <div class="page" id="page-volunteer">
+      <div class="page-header">
+        <div class="btn-back" id="volunteer-back">←</div>
+        <div class="page-title">Volunteer</div>
+      </div>
+      <div class="main-content">
+        <div class="vol-hero" id="vol-hero"></div>
+        <div style="padding:0 20px 10px"><div class="section-title">Open volunteer roles</div></div>
+        <div style="padding:0 20px" id="vol-roles"></div>
+        <div style="padding:0 20px 10px;margin-top:8px"><div class="section-title">Upcoming events</div></div>
+        <div style="padding:0 20px" id="vol-events"></div>
+        <div style="padding:0 20px 10px;margin-top:8px"><div class="section-title">🏅 Top volunteers this month</div></div>
+        <div id="vol-leaderboard"></div>
+      </div>
+    </div>
+
+    <!-- ═══ USER PROFILE ═══ -->
+    <div class="page" id="page-user-profile">
+      <div class="main-content">
+        <div class="user-profile-page" id="user-profile-content"></div>
+      </div>
+    </div>
+
+    <!-- ═══ NOTIFICATIONS ═══ -->
+    <div class="page" id="page-notifications">
+      <div class="page-header">
+        <div class="btn-back" id="notif-back">←</div>
+        <div class="page-title">Notifications</div>
+        <div class="page-header-action" id="mark-all-read">Mark all read</div>
+      </div>
+      <div class="main-content" id="notifications-list"></div>
+    </div>
+
+    <!-- ═══ FAVOURITES ═══ -->
+    <div class="page" id="page-favourites">
+      <div class="page-header">
+        <div class="btn-back" id="favs-back">←</div>
+        <div class="page-title">Saved Dogs</div>
+      </div>
+      <div class="main-content" id="favourites-list"></div>
+    </div>
+
+    <!-- ═══ SHELTER DETAIL ═══ -->
+    <div class="page" id="page-shelter-detail">
+      <div class="page-header">
+        <div class="btn-back" id="shelter-detail-back">←</div>
+        <div class="page-title">Shelter</div>
+      </div>
+      <div class="main-content" id="shelter-detail-content"></div>
+    </div>
+
+    <!-- ═══ ADMIN ═══ -->
+    <div class="page" id="page-admin">
+      <div class="page-header">
+        <div class="btn-back" id="admin-back">←</div>
+        <div class="page-title">⚙️ Manage</div>
+        <div class="page-header-action" id="admin-add-btn">+ Add</div>
+      </div>
+      <div class="main-content">
+        <div class="admin-banner">
+          <div class="admin-banner-icon">🛡️</div>
+          <div>
+            <div class="admin-banner-title">Admin console</div>
+            <div class="admin-banner-sub">Review adoptions · manage dogs &amp; shelters</div>
+          </div>
+        </div>
+        <div class="admin-tabs">
+          <div class="admin-tab active" data-tab="applications">📋 Adoptions</div>
+          <div class="admin-tab" data-tab="dogs">🐕 Dogs</div>
+          <div class="admin-tab" data-tab="shelters">🏥 Shelters</div>
+        </div>
+        <div id="admin-list" style="padding:4px 20px 28px"></div>
+      </div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav" id="bottom-nav" style="display:none">
+      <div class="nav-item active" data-nav="0"><div class="nav-icon">🐾</div><div class="nav-label">Discover</div></div>
+      <div class="nav-item" data-nav="1"><div class="nav-icon">🏠</div><div class="nav-label">Shelters</div></div>
+      <div class="nav-item" data-nav="2"><div class="nav-icon">📋</div><div class="nav-label">Adopt</div></div>
+      <div class="nav-item" data-nav="3"><div class="nav-icon">🐕</div><div class="nav-label">Foster</div></div>
+      <div class="nav-item" data-nav="4"><div class="nav-icon">💚</div><div class="nav-label">Learn</div></div>
+      <div class="nav-item" data-nav="5"><div class="nav-icon">👤</div><div class="nav-label">Profile</div></div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modal">
+      <div class="modal-sheet">
+        <div class="modal-handle"></div>
+        <div id="modal-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
