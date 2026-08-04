@@ -1118,7 +1118,11 @@ function openFosterModal(id) {
 async function loadArticles(category = 'all') {
   try {
     const params = category !== 'all' ? `?category=${category}` : '';
-    const { articles } = await API.get(`/api/articles${params}`);
+    const res = await API.get(`/api/articles${params}`);
+    let articles = (res && res.articles && res.articles.length) ? res.articles : (MOCK_DATA.articles || []);
+    if (category !== 'all' && (!res || !res.articles || !res.articles.length)) {
+      articles = MOCK_DATA.articles.filter(a => a.category.toLowerCase() === category.toLowerCase());
+    }
 
     const pinned = articles.find(a => a.id === 'a6') || articles[0];
     if (pinned) {
@@ -1130,7 +1134,7 @@ async function loadArticles(category = 'all') {
       $('#pinned-article').dataset.article = pinned.id;
     }
 
-    const filtered = articles.filter(a => a.id !== 'a6');
+    const filtered = articles.length > 1 ? articles.filter(a => a.id !== (pinned ? pinned.id : 'a6')) : articles;
     $('#articles-list').innerHTML = filtered.map(a => `
       <div class="article-card" data-article="${a.id}">
         <div class="article-card-img" style="background:${a.bg_color || 'var(--surface2)'}">${a.emoji}</div>

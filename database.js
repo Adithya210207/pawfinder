@@ -35,6 +35,15 @@ function createMockDb() {
     { id: 's20', name: 'Madukkarai Street Animal Project', emoji: '🌟', address: 'Madukkarai, Coimbatore', city: 'Coimbatore', phone: '+91 422 264 3377', email: 'team@madukkaraistreet.org', hours: '8AM-5PM', distance_km: 14.1, dogs_available: 19, dogs_rehomed: 56, volunteers: 15, rating: 4.1, verified: 1, tags: 'Sterilization,Feeding,Verified' }
   ];
 
+  const articles = [
+    { id: 'a1', title: 'How to prepare your home for a new dog', category: 'Tips', emoji: '🏠', read_time: '4 min', author: 'Dr. Priya Sharma', summary: 'Essential checklist before bringing your adopted dog home', likes: 289, bg_color: '#1a2a1a' },
+    { id: 'a2', title: 'Why adopt, not shop?', category: 'Awareness', emoji: '🐾', read_time: '5 min', author: 'PawFinder Team', summary: 'The case for adoption over purchasing from breeders', likes: 445, bg_color: '#2a1a2a' },
+    { id: 'a3', title: 'Complete vaccination guide for dogs', category: 'Health', emoji: '💉', read_time: '6 min', author: 'Dr. Rajesh Kumar', summary: 'Everything you need to know about keeping your dog protected in Kovai', likes: 312, bg_color: '#1a1a2a' },
+    { id: 'a4', title: 'Understanding indie dog behavior', category: 'Training', emoji: '🐕', read_time: '5 min', author: 'Meera Sundaram', summary: 'A guide to living with Indian street rescues', likes: 187, bg_color: '#2a1a2a' },
+    { id: 'a5', title: 'Reading your dog body language', category: 'Tips', emoji: '🐾', read_time: '4 min', author: 'Dr. Anitha Rao', summary: 'Learn to understand what your dog is telling you', likes: 156, bg_color: '#1a1a2a' },
+    { id: 'a6', title: 'India stray dog crisis: 62 million animals', category: 'Awareness', emoji: '🇮🇳', read_time: '7 min', author: 'PawFinder Team', summary: 'The numbers behind the problem and how adoption changes lives', likes: 631, bg_color: '#2a1a2a' }
+  ];
+
   const demoUser = { id: 'demo-user', name: 'Adithya Kumar', email: 'demo@pawfinder.in', phone: '+91 9876543210', city: 'Coimbatore', password_hash: bcrypt.hashSync('demo123', 10), avatar_initials: 'AK', paw_points: 240, is_admin: 1 };
 
   return {
@@ -46,6 +55,10 @@ function createMockDb() {
         run: (...params) => ({ changes: 1 }),
         get: (...params) => {
           if (query.includes('FROM users')) return demoUser;
+          if (query.includes('FROM articles WHERE id =')) {
+            const id = params[0];
+            return articles.find(a => a.id === id) || articles[0];
+          }
           if (query.includes('FROM shelters WHERE id =')) {
             const id = params[0];
             return shelters.find(s => s.id === id) || shelters[0];
@@ -65,6 +78,14 @@ function createMockDb() {
           return { c: 1, count: 1, unread: 0 };
         },
         all: (...params) => {
+          if (query.includes('FROM articles')) {
+            let res = [...articles];
+            if (query.includes('WHERE category =')) {
+              const cat = params[0];
+              res = res.filter(a => a.category.toLowerCase() === String(cat).toLowerCase());
+            }
+            return res;
+          }
           if (query.includes('FROM shelters')) {
             let res = [...shelters];
             if (query.includes('verified = 1')) res = res.filter(s => s.verified);
