@@ -2,6 +2,8 @@
 
 **PawFinder** is a modern, full-stack web and desktop application connecting dog lovers with rescue shelters, adoption listings, foster programs, and volunteer opportunities.
 
+🌐 **Live Website**: [https://pawfinder-xvjk.onrender.com](https://pawfinder-xvjk.onrender.com)
+
 ---
 
 ## ✨ Key Features
