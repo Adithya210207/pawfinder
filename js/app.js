@@ -96,13 +96,64 @@ const MOCK_DATA = {
   ]
 };
 
+  applications: [
+    { id: 'app1', dog_id: 'dog-1', dog_name: 'Bruno', dog_emoji: '🐕', shelter_name: 'Blue Cross of Coimbatore', status: 'approved', progress: 100, created_at: '2 days ago' },
+    { id: 'app2', dog_id: 'dog-2', dog_name: 'Bella', dog_emoji: '🐕‍🦺', shelter_name: 'Kongu Animal Rescue', status: 'pending', progress: 50, created_at: '1 day ago' }
+  ],
+  fosterDogs: [
+    { id: 'f1', name: 'Mango', emoji: '🐕', breed: 'Indie', age_text: '2 yrs', reason: 'Post-surgery recovery — needs quiet home for healing', duration: '3-4 weeks', urgency: 'high', shelter_name: 'Humane Animal Society' },
+    { id: 'f2', name: 'Cookie', emoji: '🐶', breed: 'Indie Puppy', age_text: '3 mo', reason: 'Too young for shelter — needs bottle feeding', duration: '6-8 weeks', urgency: 'high', shelter_name: 'Kongu Animal Rescue' },
+    { id: 'f3', name: 'Raja', emoji: '🦮', breed: 'GSD Mix', age_text: '5 yrs', reason: 'Shelter overflow — excellent temperament', duration: '4-6 weeks', urgency: 'medium', shelter_name: 'Blue Cross of Coimbatore' },
+    { id: 'f4', name: 'Lily', emoji: '🐩', breed: 'Spitz Mix', age_text: '3 yrs', reason: 'Nursing mother with 4 puppies', duration: '8 weeks', urgency: 'high', shelter_name: 'Paws & Care Kovai' },
+    { id: 'f5', name: 'Goldie', emoji: '🐕‍🦺', breed: 'Lab Mix', age_text: '6 yrs', reason: 'Behavioral rehab — needs experienced foster', duration: '6-8 weeks', urgency: 'medium', shelter_name: 'Street Dog Care Coimbatore' },
+    { id: 'f6', name: 'Patches', emoji: '🐶', breed: 'Indie', age_text: '7 mo', reason: 'Recovering from skin treatment', duration: '3-4 weeks', urgency: 'low', shelter_name: 'Second Chance Kovai' }
+  ],
+  volunteerRoles: [
+    { id: 'r1', title: 'Dog Walker', emoji: '🚶', description: 'Walk shelter dogs on weekends. 2-hour shifts.', bg_color: '#1a2a1a', spots_status: 'open', spots_text: '12 spots' },
+    { id: 'r2', title: 'Feeding Volunteer', emoji: '🍚', description: 'Help prepare and serve meals. Morning shifts.', bg_color: '#2a2a1a', spots_status: 'open', spots_text: '8 spots' },
+    { id: 'r3', title: 'Adoption Counselor', emoji: '💬', description: 'Guide potential adopters through the process.', bg_color: '#1a1a2a', spots_status: 'limited', spots_text: '3 spots' },
+    { id: 'r4', title: 'Medical Assistant', emoji: '💊', description: 'Assist vets during check-ups and treatments.', bg_color: '#2a2a1a', spots_status: 'limited', spots_text: '2 spots' },
+    { id: 'r5', title: 'Photography', emoji: '📸', description: 'Take adoption photos of dogs for the website.', bg_color: '#1a2a2a', spots_status: 'open', spots_text: '5 spots' }
+  ],
+  volunteerEvents: [
+    { id: 'e1', title: 'Weekend Adoption Drive', description: 'Meet adoptable dogs at Brookefields Mall, Coimbatore. Bring your family!', event_date: 'SAT, MAY 24', attendees: 45, max_attendees: 100 },
+    { id: 'e2', title: 'Vaccination Camp', description: 'Free vaccination camp at Humane Animal Society, Saibaba Colony. Bring strays from your area.', event_date: 'SUN, MAY 25', attendees: 28, max_attendees: 50 },
+    { id: 'e3', title: 'Dog Training Workshop', description: 'Learn basic training techniques from certified behaviorists at Race Course grounds.', event_date: 'SAT, MAY 31', attendees: 32, max_attendees: 40 }
+  ],
+  leaderboard: [
+    { rank: 1, name: 'Kavitha R.', sub: '14 dogs adopted & fostered', points: 1450 },
+    { rank: 2, name: 'Siddharth M.', sub: '80+ volunteer hours', points: 1210 },
+    { rank: 3, name: 'Adithya Kumar', sub: 'Active Paw Pioneer', points: 980 }
+  ],
+  chatMessages: [
+    { sender: 'shelter', content: 'Hello! Thank you for reaching out to Blue Cross of Coimbatore. How can we help you today?' },
+    { sender: 'user', content: 'Hi, I am interested in adopting Bruno!' },
+    { sender: 'shelter', content: 'Bruno is a wonderful boy! You can submit an adoption application directly from his profile.' }
+  ]
+};
+
 function mockFallback(method, url, data) {
   if (url.includes('/api/auth/me')) return { user: MOCK_DATA.user };
   if (url.includes('/api/auth/login')) return { user: MOCK_DATA.user };
-  if (url.includes('/api/shelters/stats')) return { stats: { total_shelters: MOCK_DATA.shelters.length, total_dogs: MOCK_DATA.dogs.length, total_rehomed: 1045 } };
+  if (url.includes('/api/auth/register')) return { user: MOCK_DATA.user };
+  if (url.includes('/api/auth/logout')) return { success: true };
+  if (url.includes('/api/users/notifications/read')) return { success: true };
+  if (url.includes('/api/users/notifications')) return { notifications: MOCK_DATA.notifications, unread: 1 };
+  if (url.includes('/api/users/profile')) return { user: MOCK_DATA.user, stats: { applications: 2, favourites: 5, articles: 4, volunteer_hrs: 12 } };
+  if (url.includes('/api/users/favourites')) return { dogs: MOCK_DATA.dogs.slice(0, 4) };
+  if (url.includes('/api/users/leaderboard')) return { leaders: MOCK_DATA.leaderboard };
+  if (url.includes('/api/shelters/stats')) return { stats: { total_shelters: MOCK_DATA.shelters.length, total_dogs: MOCK_DATA.dogs.length, total_rehomed: 1045, total_volunteers: 480 } };
+  if (url.includes('/api/foster/stats')) return { active_fosters: 18, dogs_fostered: 142, become_adopters: 78 };
+  if (url.includes('/api/foster')) return { dogs: MOCK_DATA.fosterDogs };
+  if (url.includes('/api/volunteer/roles')) return { roles: MOCK_DATA.volunteerRoles };
+  if (url.includes('/api/volunteer/events')) return { events: MOCK_DATA.volunteerEvents };
+  if (url.includes('/api/volunteer/leaderboard')) return { leaderboard: MOCK_DATA.leaderboard };
+  if (url.includes('/api/volunteer/stats')) return { total_volunteers: 480, open_roles: 14, return_rate: 92 };
+  if (url.includes('/api/volunteer')) return { roles: MOCK_DATA.volunteerRoles, events: MOCK_DATA.volunteerEvents };
   if (url.includes('/api/dogs/featured')) return { dog: MOCK_DATA.dogs[0] };
   if (url.includes('/api/dogs/urgent')) return { dogs: MOCK_DATA.dogs.filter(d => d.urgent) };
-  if (url.includes('/api/dogs/recent')) return { dogs: MOCK_DATA.dogs.slice(0, 4) };
+  if (url.includes('/api/dogs/recent')) return { dogs: MOCK_DATA.dogs.slice(0, 6) };
+  if (url.includes('/api/dogs/admin/all')) return { dogs: MOCK_DATA.dogs };
   if (url.includes('/api/dogs/')) {
     const dogId = url.split('/api/dogs/')[1].split('/')[0];
     const dog = MOCK_DATA.dogs.find(d => d.id === dogId) || MOCK_DATA.dogs[0];
@@ -115,9 +166,19 @@ function mockFallback(method, url, data) {
     return { shelter, dogs: MOCK_DATA.dogs.filter(d => d.shelter_id === shelter.id) };
   }
   if (url.includes('/api/shelters')) return { shelters: MOCK_DATA.shelters };
-  if (url.includes('/api/applications')) return { applications: [] };
-  if (url.includes('/api/foster')) return { foster: [] };
-  if (url.includes('/api/chat')) return { messages: [] };
+  if (url.includes('/api/articles/')) {
+    const aId = url.split('/api/articles/')[1].split('/')[0];
+    const article = MOCK_DATA.articles.find(a => a.id === aId) || MOCK_DATA.articles[0];
+    return { article, related: MOCK_DATA.articles.filter(a => a.id !== article.id).slice(0, 3) };
+  }
+  if (url.includes('/api/articles')) return { articles: MOCK_DATA.articles };
+  if (url.includes('/api/applications/admin/all')) return { applications: MOCK_DATA.applications, counts: { pending: 1, approved: 1, rejected: 0 } };
+  if (url.includes('/api/applications')) return { applications: MOCK_DATA.applications };
+  if (url.includes('/api/chat')) return { messages: MOCK_DATA.chatMessages, aiMessage: 'Thank you for your message! Our shelter team will get back to you shortly.' };
+  if (url.includes('/api/notifications')) return { notifications: MOCK_DATA.notifications, unread: 1 };
+  if (url.includes('/api/admin/applications')) return { applications: MOCK_DATA.applications, counts: { pending: 1, approved: 1, rejected: 0 } };
+  if (url.includes('/api/admin/dogs')) return { dogs: MOCK_DATA.dogs };
+  if (url.includes('/api/admin/shelters')) return { shelters: MOCK_DATA.shelters };
   return { success: true };
 }
 
