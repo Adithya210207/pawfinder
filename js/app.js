@@ -131,16 +131,68 @@ const MOCK_DATA = {
 };
 
 function mockFallback(method, url, data) {
+  // Auth
   if (url.includes('/api/auth/me')) return { user: MOCK_DATA.user };
   if (url.includes('/api/auth/login')) return { user: MOCK_DATA.user };
   if (url.includes('/api/auth/register')) return { user: MOCK_DATA.user };
   if (url.includes('/api/auth/logout')) return { success: true };
-  if (url.includes('/api/users/notifications/read')) return { success: true };
-  if (url.includes('/api/users/notifications')) return { notifications: MOCK_DATA.notifications, unread: 1 };
-  if (url.includes('/api/users/profile')) return { user: MOCK_DATA.user, stats: { applications: 2, favourites: 5, articles: 4, volunteer_hrs: 12 } };
-  if (url.includes('/api/users/favourites')) return { dogs: MOCK_DATA.dogs.slice(0, 4) };
+
+  // Notifications
+  if (url.includes('/api/users/notifications/read')) {
+    MOCK_DATA.notifications.forEach(n => n.read = 1);
+    return { success: true };
+  }
+  if (url.includes('/api/users/notifications')) return { notifications: MOCK_DATA.notifications, unread: MOCK_DATA.notifications.filter(n => !n.read).length };
+
+  // Favourites
+  if (url.includes('/favourite')) {
+    const dogId = url.split('/api/dogs/')[1].split('/')[0];
+    if (!MOCK_DATA.favourites) MOCK_DATA.favourites = {};
+    if (method === 'POST') {
+      MOCK_DATA.favourites[dogId] = !MOCK_DATA.favourites[dogId];
+      return { favourited: MOCK_DATA.favourites[dogId] };
+    }
+    return { favourited: !!MOCK_DATA.favourites[dogId] };
+  }
+  if (url.includes('/api/users/favourites')) {
+    const favIds = Object.keys(MOCK_DATA.favourites || {}).filter(k => MOCK_DATA.favourites[k]);
+    const favDogs = MOCK_DATA.dogs.filter(d => favIds.includes(d.id));
+    return { dogs: favDogs.length ? favDogs : MOCK_DATA.dogs.slice(0, 4) };
+  }
+
+  // Profile & Leaderboard
+  if (url.includes('/api/users/profile') && method === 'PUT') {
+    if (data) MOCK_DATA.user = { ...MOCK_DATA.user, ...data };
+    return { success: true, user: MOCK_DATA.user };
+  }
+  if (url.includes('/api/users/profile')) return { user: MOCK_DATA.user, stats: { applications: MOCK_DATA.applications.length, favourites: Object.keys(MOCK_DATA.favourites || {}).length || 5, articles: 4, volunteer_hrs: 12 } };
   if (url.includes('/api/users/leaderboard')) return { leaders: MOCK_DATA.leaderboard };
+
+  // Shelters
   if (url.includes('/api/shelters/stats')) return { stats: { total_shelters: MOCK_DATA.shelters.length, total_dogs: MOCK_DATA.dogs.length, total_rehomed: 1045, total_volunteers: 480 } };
+  if (url.includes('/api/shelters/')) {
+    const sId = url.split('/api/shelters/')[1].split('?')[0];
+    const shelter = MOCK_DATA.shelters.find(s => s.id === sId) || MOCK_DATA.shelters[0];
+    return { shelter, dogs: MOCK_DATA.dogs.filter(d => d.shelter_id === shelter.id) };
+  }
+  if (url.includes('/api/shelters')) {
+    let list = [...MOCK_DATA.shelters];
+    try {
+      const u = new URL(url, 'http://localhost');
+      const filter = u.searchParams.get('filter');
+      const search = u.searchParams.get('search');
+      if (filter === 'verified') list = list.filter(s => s.verified);
+      else if (filter === 'near') list = list.filter(s => s.distance_km <= 5);
+      else if (filter === 'most_dogs') list = [...list].sort((a, b) => b.dogs_available - a.dogs_available);
+      if (search) {
+        const q = search.toLowerCase();
+        list = list.filter(s => s.name.toLowerCase().includes(q) || s.address.toLowerCase().includes(q));
+      }
+    } catch (e) {}
+    return { shelters: list };
+  }
+
+  // Foster & Volunteer
   if (url.includes('/api/foster/stats')) return { active_fosters: 18, dogs_fostered: 142, become_adopters: 78 };
   if (url.includes('/api/foster')) return { dogs: MOCK_DATA.fosterDogs };
   if (url.includes('/api/volunteer/roles')) return { roles: MOCK_DATA.volunteerRoles };
@@ -148,35 +200,115 @@ function mockFallback(method, url, data) {
   if (url.includes('/api/volunteer/leaderboard')) return { leaderboard: MOCK_DATA.leaderboard };
   if (url.includes('/api/volunteer/stats')) return { total_volunteers: 480, open_roles: 14, return_rate: 92 };
   if (url.includes('/api/volunteer')) return { roles: MOCK_DATA.volunteerRoles, events: MOCK_DATA.volunteerEvents };
+
+  // Dogs (Admin & User)
   if (url.includes('/api/dogs/featured')) return { dog: MOCK_DATA.dogs[0] };
   if (url.includes('/api/dogs/urgent')) return { dogs: MOCK_DATA.dogs.filter(d => d.urgent) };
   if (url.includes('/api/dogs/recent')) return { dogs: MOCK_DATA.dogs.slice(0, 6) };
   if (url.includes('/api/dogs/admin/all')) return { dogs: MOCK_DATA.dogs };
+  if (url.includes('/api/dogs') && method === 'POST') {
+    const newDog = { id: 'dog-' + Date.now(), ...data, emoji: data.emoji || '🐕' };
+    MOCK_DATA.dogs.unshift(newDog);
+    return { success: true, dog: newDog };
+  }
+  if (url.includes('/api/dogs/') && method === 'PUT') {
+    const dogId = url.split('/api/dogs/')[1];
+    const idx = MOCK_DATA.dogs.findIndex(d => d.id === dogId);
+    if (idx !== -1) MOCK_DATA.dogs[idx] = { ...MOCK_DATA.dogs[idx], ...data };
+    return { success: true, dog: MOCK_DATA.dogs[idx] };
+  }
+  if (url.includes('/api/dogs/') && method === 'DELETE') {
+    const dogId = url.split('/api/dogs/')[1];
+    MOCK_DATA.dogs = MOCK_DATA.dogs.filter(d => d.id !== dogId);
+    return { success: true };
+  }
   if (url.includes('/api/dogs/')) {
     const dogId = url.split('/api/dogs/')[1].split('/')[0];
     const dog = MOCK_DATA.dogs.find(d => d.id === dogId) || MOCK_DATA.dogs[0];
-    return { dog, similar: MOCK_DATA.dogs.filter(d => d.id !== dog.id).slice(0, 3), favourited: false };
+    const similar = MOCK_DATA.dogs.filter(d => d.id !== dog.id && d.shelter_id === dog.shelter_id).slice(0, 3);
+    if (!similar.length) similar.push(...MOCK_DATA.dogs.filter(d => d.id !== dog.id).slice(0, 3));
+    const favourited = MOCK_DATA.favourites ? !!MOCK_DATA.favourites[dog.id] : false;
+    return { dog, similar, favourited };
   }
-  if (url.includes('/api/dogs')) return { dogs: MOCK_DATA.dogs };
-  if (url.includes('/api/shelters/')) {
-    const sId = url.split('/api/shelters/')[1].split('/')[0];
-    const shelter = MOCK_DATA.shelters.find(s => s.id === sId) || MOCK_DATA.shelters[0];
-    return { shelter, dogs: MOCK_DATA.dogs.filter(d => d.shelter_id === shelter.id) };
+  if (url.includes('/api/dogs')) {
+    let list = [...MOCK_DATA.dogs];
+    try {
+      const u = new URL(url, 'http://localhost');
+      const breed = u.searchParams.get('breed');
+      const gender = u.searchParams.get('gender');
+      const size = u.searchParams.get('size');
+      const search = u.searchParams.get('search');
+      if (breed) list = list.filter(d => d.breed.toLowerCase().includes(breed.toLowerCase()));
+      if (gender) list = list.filter(d => d.gender.toLowerCase() === gender.toLowerCase());
+      if (size) list = list.filter(d => d.size.toLowerCase() === size.toLowerCase());
+      if (search) {
+        const q = search.toLowerCase();
+        list = list.filter(d => d.name.toLowerCase().includes(q) || d.breed.toLowerCase().includes(q) || d.location.toLowerCase().includes(q));
+      }
+    } catch (e) {}
+    return { dogs: list };
   }
-  if (url.includes('/api/shelters')) return { shelters: MOCK_DATA.shelters };
+
+  // Articles
   if (url.includes('/api/articles/')) {
     const aId = url.split('/api/articles/')[1].split('/')[0];
     const article = MOCK_DATA.articles.find(a => a.id === aId) || MOCK_DATA.articles[0];
     return { article, related: MOCK_DATA.articles.filter(a => a.id !== article.id).slice(0, 3) };
   }
   if (url.includes('/api/articles')) return { articles: MOCK_DATA.articles };
-  if (url.includes('/api/applications/admin/all')) return { applications: MOCK_DATA.applications, counts: { pending: 1, approved: 1, rejected: 0 } };
+
+  // Applications
+  if (url.includes('/decision')) {
+    const parts = url.split('/');
+    const appId = parts[parts.indexOf('applications') + 1];
+    const app = MOCK_DATA.applications.find(a => a.id === appId);
+    if (app && data && data.decision) {
+      app.status = data.decision;
+      app.progress = data.decision === 'approved' ? 100 : (data.decision === 'rejected' ? 0 : 50);
+    }
+    return { success: true };
+  }
+  if (url.includes('/api/applications/admin/all')) {
+    let list = [...MOCK_DATA.applications];
+    try {
+      const u = new URL(url, 'http://localhost');
+      const status = u.searchParams.get('status');
+      if (status && status !== 'all') list = list.filter(a => a.status === status);
+    } catch (e) {}
+    const pending = MOCK_DATA.applications.filter(a => a.status === 'pending').length;
+    const approved = MOCK_DATA.applications.filter(a => a.status === 'approved').length;
+    const rejected = MOCK_DATA.applications.filter(a => a.status === 'rejected').length;
+    return { applications: list, counts: { pending, approved, rejected } };
+  }
+  if (url.includes('/api/applications') && method === 'POST') {
+    const dog = MOCK_DATA.dogs.find(d => d.id === data.dog_id) || MOCK_DATA.dogs[0];
+    const newApp = {
+      id: 'app-' + Date.now(),
+      dog_id: dog.id,
+      dog_name: dog.name,
+      dog_emoji: dog.emoji || '🐕',
+      shelter_name: dog.shelter_name || 'Coimbatore Shelter',
+      status: 'pending',
+      progress: 25,
+      created_at: 'Just now'
+    };
+    MOCK_DATA.applications.unshift(newApp);
+    return { success: true, application: newApp };
+  }
   if (url.includes('/api/applications')) return { applications: MOCK_DATA.applications };
-  if (url.includes('/api/chat')) return { messages: MOCK_DATA.chatMessages, aiMessage: 'Thank you for your message! Our shelter team will get back to you shortly.' };
-  if (url.includes('/api/notifications')) return { notifications: MOCK_DATA.notifications, unread: 1 };
+
+  // Chat
+  if (url.includes('/api/chat') && method === 'POST') {
+    if (data && data.content) MOCK_DATA.chatMessages.push({ sender: 'user', content: data.content });
+    return { success: true, aiMessage: 'Thank you for contacting us! A shelter representative from Coimbatore will reply to your message shortly.' };
+  }
+  if (url.includes('/api/chat')) return { messages: MOCK_DATA.chatMessages };
+
+  // Admin fallbacks
   if (url.includes('/api/admin/applications')) return { applications: MOCK_DATA.applications, counts: { pending: 1, approved: 1, rejected: 0 } };
   if (url.includes('/api/admin/dogs')) return { dogs: MOCK_DATA.dogs };
   if (url.includes('/api/admin/shelters')) return { shelters: MOCK_DATA.shelters };
+
   return { success: true };
 }
 
