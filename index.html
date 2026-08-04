@@ -1,0 +1,1943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>PawFinder — Find a Companion</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#141414;--surface:#1e1e1e;--surface2:#252525;--surface3:#2e2e2e;--border:#333;--text:#f0f0f0;--text-secondary:#9a9a9a;--text-muted:#606060;--accent:#6db33f;--accent-dim:#2d4a1a;--accent-light:#a8d470;--blue-tag:#2a3a5c;--blue-text:#7db3f5;--nav-active:#3a5a8a;--red:#e05252;--radius:18px;--radius-sm:10px;--orange:#f5a623;--orange-dim:#3a2a10;--purple:#c084fc;--purple-dim:#2a1a40}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;overflow:hidden;}
+body{font-family:'DM Sans',sans-serif;background:#0a0a0a;display:flex;justify-content:center;align-items:flex-start;padding:0;margin:0}
+.phone-shell{width:100vw;min-height:100vh;height:100vh;background:var(--bg);border-radius:0;overflow:hidden;position:relative;box-shadow:none;display:flex;flex-direction:column}
+.status-bar{display:flex;justify-content:space-between;align-items:center;padding:14px 24px 0;font-size:13px;font-weight:600;color:var(--text);font-family:'Syne',sans-serif}
+.status-right{display:flex;gap:6px;align-items:center;font-size:12px}
+.page{display:none;flex-direction:column;height:100vh;animation:fadeIn .25s ease}
+.page.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.scroll-area{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:20px;scrollbar-width:none}
+.scroll-area::-webkit-scrollbar{display:none}
+.bottom-nav{display:flex;background:var(--surface);border-top:1px solid var(--border);padding:10px 0 24px}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:6px 0;transition:all .2s}
+.nav-icon{width:44px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;transition:all .2s}
+.nav-item.active .nav-icon{background:var(--nav-active)}
+.nav-label{font-size:10px;font-weight:500;color:var(--text-muted);font-family:'DM Sans',sans-serif}
+.nav-item.active .nav-label{color:#7db3f5}
+.section-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:600;color:var(--text);padding:0 20px 12px}
+.tag{display:inline-block;padding:3px 9px;border-radius:100px;font-size:11px;font-weight:500}
+.tag-green{background:var(--accent-dim);color:var(--accent-light)}
+.tag-blue{background:var(--blue-tag);color:var(--blue-text)}
+.tag-orange{background:#3a2a10;color:#f5c070}
+.tag-purple{background:#2a1a40;color:#c084fc}
+.tag-red{background:#3a1010;color:#f08080}
+.tag-pink{background:#3a1025;color:#f48fb1}
+.btn-primary{background:var(--accent);color:#fff;border:none;border-radius:14px;padding:15px;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;width:100%}
+.btn-primary:active{background:#5a9a30;transform:scale(0.98)}
+.btn-secondary{background:transparent;color:var(--text);border:1.5px solid var(--border);border-radius:14px;padding:15px;font-family:'Syne',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;width:100%}
+.btn-secondary:active{background:var(--surface2)}
+.back-btn{width:38px;height:38px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all .15s;flex-shrink:0}
+.back-btn:active{transform:scale(0.95)}
+.page-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:600;color:var(--text)}
+.search-bar{margin:0 20px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:13px 16px;display:flex;align-items:center;gap:10px;cursor:text;transition:border-color .2s}
+.search-bar:focus-within{border-color:var(--accent)}
+.search-bar input{background:none;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:15px;color:var(--text);width:100%}
+.search-bar input::placeholder{color:var(--text-muted)}
+.input-field{background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:13px 14px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);width:100%;outline:none;transition:border-color .2s}
+.input-field:focus{border-color:#7db3f5}
+.input-field::placeholder{color:var(--text-muted)}
+.field-label{font-size:14px;color:var(--text);margin-bottom:8px;font-weight:500}
+.auth-page{padding:40px 28px;display:flex;flex-direction:column;flex:1}
+.auth-logo{font-size:48px;text-align:center;margin-bottom:12px}
+.auth-title{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--text);text-align:center;margin-bottom:6px}
+.auth-sub{font-size:14px;color:var(--text-secondary);text-align:center;margin-bottom:36px}
+.auth-form{display:flex;flex-direction:column;gap:14px;flex:1}
+.auth-switch{text-align:center;font-size:14px;color:var(--text-secondary);margin-top:20px}
+.auth-switch a{color:#7db3f5;font-weight:600;cursor:pointer;text-decoration:none}
+.auth-error{background:#2a1a1a;border:1px solid #5a2020;border-radius:10px;padding:10px 14px;font-size:13px;color:#f08080;display:none}
+.auth-error.show{display:block}
+.home-header{padding:16px 20px 12px;display:flex;justify-content:space-between;align-items:flex-start}
+.greeting-text{font-size:14px;color:var(--text-secondary);margin-bottom:2px}
+.greeting-title{font-family:'Syne',sans-serif;font-size:26px;font-weight:700;color:var(--text)}
+.header-actions{display:flex;gap:10px;align-items:center;margin-top:4px}
+.icon-btn{width:40px;height:40px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;position:relative;transition:all .2s}
+.notif-dot{width:8px;height:8px;background:var(--red);border-radius:50%;position:absolute;top:6px;right:6px;border:1.5px solid var(--bg)}
+.avatar-btn{width:40px;height:40px;border-radius:12px;background:#3a5a8a;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;cursor:pointer}
+.filter-row{display:flex;gap:8px;padding:0 20px 20px;overflow-x:auto;scrollbar-width:none}
+.filter-row::-webkit-scrollbar{display:none}
+.filter-chip{white-space:nowrap;padding:8px 16px;border-radius:100px;font-size:14px;font-weight:500;border:1.5px solid var(--border);background:transparent;color:var(--text-secondary);cursor:pointer;transition:all .18s;font-family:'DM Sans',sans-serif}
+.filter-chip.active{background:var(--nav-active);border-color:var(--nav-active);color:#fff}
+.featured-card{margin:0 20px 24px;background:#2a4a1a;border-radius:var(--radius);padding:18px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:all .2s;border:1px solid #3a6025;position:relative;overflow:hidden}
+.featured-card::before{content:'';position:absolute;top:-30px;right:-30px;width:100px;height:100px;background:radial-gradient(circle,rgba(109,179,63,0.2),transparent 70%);border-radius:50%}
+.featured-card:active{transform:scale(0.98)}
+.featured-dog-img{width:70px;height:70px;background:rgba(0,0,0,0.2);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0}
+.featured-info{flex:1}
+.featured-name{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:#fff;margin-bottom:3px}
+.featured-sub{font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:8px}
+.verified-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(0,0,0,0.3);border-radius:100px;padding:4px 10px;font-size:11px;color:var(--accent-light);font-weight:500}
+.adopt-btn{background:#fff;color:#1a3a08;border:none;border-radius:12px;padding:12px 20px;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .2s;flex-shrink:0}
+.adopt-btn:active{transform:scale(0.96)}
+.dog-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 20px}
+.dog-card{background:var(--surface2);border-radius:var(--radius);overflow:hidden;cursor:pointer;border:1px solid var(--border);transition:all .2s}
+.dog-card:active{transform:scale(0.97)}
+.dog-card-img{height:110px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:44px;position:relative}
+.dog-card-fav{position:absolute;top:8px;right:8px;font-size:14px;opacity:0.8}
+.dog-card-urgency{position:absolute;top:8px;left:8px;background:rgba(224,82,82,0.9);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px}
+.dog-card-body{padding:12px}
+.dog-card-name{font-family:'Syne',sans-serif;font-size:16px;font-weight:600;color:var(--text);margin-bottom:3px}
+.dog-card-sub{font-size:12px;color:var(--text-secondary);margin-bottom:8px}
+.see-all-card{background:var(--surface2);border-radius:var(--radius);border:1px dashed var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;min-height:180px;transition:all .2s}
+.see-all-card:active{transform:scale(0.97);background:var(--surface3)}
+.profile-header{padding:14px 20px;display:flex;justify-content:space-between;align-items:center}
+.heart-btn{width:38px;height:38px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:17px;transition:all .2s}
+.heart-btn.liked{background:#3a1a1a;border-color:#6a2525}
+.dog-hero{margin:0 20px 20px;height:200px;background:var(--surface2);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:80px;border:1px solid var(--border)}
+.profile-body{padding:0 20px}
+.profile-name-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.profile-name{font-family:'Syne',sans-serif;font-size:28px;font-weight:700;color:var(--text)}
+.verified-pill{background:var(--accent-dim);color:var(--accent-light);border-radius:100px;padding:5px 12px;font-size:12px;font-weight:600;margin-top:6px}
+.profile-location{font-size:14px;color:var(--text-secondary);margin-bottom:14px}
+.tags-row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px}
+.stats-row{display:flex;gap:10px;margin-bottom:20px}
+.stat-box{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 10px;text-align:center}
+.stat-val{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:3px}
+.stat-label{font-size:12px;color:var(--text-secondary)}
+.about-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:600;color:var(--text);margin-bottom:8px}
+.about-text{font-size:14px;color:var(--text-secondary);line-height:1.65;margin-bottom:20px}
+.shelter-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;display:flex;align-items:center;gap:12px;margin-bottom:16px;cursor:pointer;transition:all .2s}
+.shelter-card:active{background:var(--surface3)}
+.shelter-icon{width:40px;height:40px;background:var(--accent-dim);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.shelter-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px}
+.shelter-sub{font-size:12px;color:var(--text-secondary)}
+.profile-actions{display:flex;gap:12px;padding:14px 20px 28px;border-top:1px solid var(--border);background:var(--bg)}
+.chat-btn{flex:1;padding:15px;border-radius:14px;border:1.5px solid var(--border);background:transparent;color:var(--text);font-family:'Syne',sans-serif;font-size:15px;font-weight:600;cursor:pointer}
+.start-btn{flex:1.4;padding:15px;border-radius:14px;border:none;background:var(--accent);color:#fff;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer}
+.adoption-header{padding:14px 20px;display:flex;align-items:center;gap:14px}
+.stepper{padding:6px 20px 20px;display:flex;align-items:center}
+.step-item{display:flex;flex-direction:column;align-items:center;gap:6px}
+.step-circle{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;font-family:'Syne',sans-serif;transition:all .3s}
+.step-circle.done{background:var(--accent);color:#fff}
+.step-circle.active{background:#3a5a8a;border:2px solid #7db3f5;color:#fff}
+.step-circle.pending{background:var(--surface3);border:1.5px solid var(--border);color:var(--text-muted)}
+.step-label{font-size:11px;color:var(--text-muted);font-weight:500}
+.step-label.active{color:#7db3f5}
+.step-line{flex:1;height:2px;background:var(--border);margin:0 6px;margin-bottom:18px}
+.step-line.done{background:var(--accent)}
+.adoption-dog-card{margin:0 20px 20px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;gap:12px}
+.adopt-dog-name{font-family:'Syne',sans-serif;font-size:16px;font-weight:600;color:var(--text)}
+.adopt-dog-sub{font-size:12px;color:var(--text-secondary)}
+.step-badge{margin-left:auto;font-size:12px;font-weight:600;color:var(--accent-light)}
+.form-section{padding:0 20px 4px}
+.form-section-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:14px;text-transform:uppercase;letter-spacing:.05em}
+.chip-group{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.choice-chip{padding:9px 18px;border-radius:100px;font-size:14px;font-weight:500;border:1.5px solid var(--border);background:transparent;color:var(--text-secondary);cursor:pointer;transition:all .18s;font-family:'DM Sans',sans-serif}
+.choice-chip.selected{background:var(--nav-active);border-color:#7db3f5;color:#fff}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.select-field{appearance:none;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:13px 14px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text-muted);width:100%;outline:none;transition:border-color .2s;cursor:pointer;margin-bottom:16px}
+.select-field:focus{border-color:#7db3f5}
+.divider{height:1px;background:var(--border);margin:8px 0 18px}
+.docs-section{padding:0 20px}
+.docs-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:12px}
+.doc-row{background:var(--surface2);border:1.5px dashed var(--border);border-radius:var(--radius-sm);padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:10px;cursor:pointer;transition:all .2s}
+.doc-row:active{background:var(--surface3)}
+.doc-icon{width:38px;height:38px;background:var(--surface3);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.doc-name{font-size:14px;font-weight:500;color:var(--text)}
+.doc-sub{font-size:11px;color:var(--text-muted)}
+.doc-status-ok{font-size:12px;font-weight:600;color:var(--accent-light);margin-left:auto}
+.doc-status-pending{font-size:12px;font-weight:500;color:var(--text-muted);margin-left:auto}
+.adoption-footer{padding:14px 20px 28px;border-top:1px solid var(--border);background:var(--bg)}
+.continue-btn{width:100%;padding:16px;border-radius:16px;border:none;background:var(--accent);color:#fff;font-family:'Syne',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:all .2s;margin-bottom:12px}
+.save-later{text-align:center;font-size:14px;color:#7db3f5;font-weight:500;cursor:pointer;padding:4px}
+.shelters-header{padding:16px 20px 14px}
+.shelters-title{font-family:'Syne',sans-serif;font-size:26px;font-weight:700;color:var(--text);margin-bottom:14px}
+.shelter-list{padding:0 20px;display:flex;flex-direction:column;gap:12px}
+.shelter-list-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:all .2s}
+.shelter-list-card:active{background:var(--surface3);transform:scale(0.98)}
+.shelter-card-top{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.shelter-list-icon{width:48px;height:48px;background:var(--accent-dim);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px}
+.shelter-list-name{font-family:'Syne',sans-serif;font-size:16px;font-weight:600;color:var(--text);margin-bottom:2px}
+.shelter-list-sub{font-size:12px;color:var(--text-secondary)}
+.shelter-stats-row{display:flex;gap:16px;padding-top:10px;border-top:1px solid var(--border)}
+.shelter-stat{font-size:12px;color:var(--text-secondary)}
+.shelter-stat span{color:var(--text);font-weight:600}
+.shelter-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.awareness-header{padding:16px 20px 14px}
+.awareness-title{font-family:'Syne',sans-serif;font-size:26px;font-weight:700;color:var(--text);margin-bottom:4px}
+.awareness-sub{font-size:14px;color:var(--text-secondary);margin-bottom:16px}
+.awareness-filter-row{display:flex;gap:8px;padding:0 20px 16px;overflow-x:auto;scrollbar-width:none}
+.awareness-filter-row::-webkit-scrollbar{display:none}
+.awareness-list{padding:0 20px;display:flex;flex-direction:column;gap:12px}
+.awareness-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:all .2s}
+.awareness-card:active{transform:scale(0.98)}
+.awareness-img{height:110px;display:flex;align-items:center;justify-content:center;font-size:48px}
+.awareness-body{padding:14px}
+.awareness-tag{display:inline-block;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:600;margin-bottom:8px}
+.awareness-art-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:600;color:var(--text);margin-bottom:5px}
+.awareness-art-sub{font-size:13px;color:var(--text-secondary);line-height:1.5}
+.awareness-meta{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.awareness-author{font-size:11px;color:var(--text-muted)}
+.awareness-likes{font-size:11px;color:var(--text-muted);margin-left:auto}
+.app-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin:0 20px 12px}
+.app-card-top{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.app-card-name{font-family:'Syne',sans-serif;font-size:15px;font-weight:600;color:var(--text);margin-bottom:2px}
+.app-card-sub{font-size:12px;color:var(--text-secondary)}
+.app-status{padding:4px 10px;border-radius:100px;font-size:11px;font-weight:600;margin-left:auto}
+.app-status.pending{background:#2a2a10;color:#f5c070}
+.app-status.approved{background:var(--accent-dim);color:var(--accent-light)}
+.app-status.rejected{background:#2a1010;color:#f08080}
+.app-progress{margin-top:8px;height:4px;background:var(--border);border-radius:100px;overflow:hidden}
+.app-progress-fill{height:100%;background:var(--accent);border-radius:100px;transition:width .5s ease}
+.app-timeline{margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.timeline-step{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px}
+.timeline-dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0}
+.timeline-dot.done{background:var(--accent)}
+.timeline-dot.pending{background:var(--surface3);border:1.5px solid var(--border)}
+.timeline-label{font-size:12px;color:var(--text-secondary)}
+.timeline-label.done{color:var(--text)}
+.user-profile-page{padding:20px}
+.user-avatar-large{width:80px;height:80px;border-radius:20px;background:#3a5a8a;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:28px;font-weight:700;color:#fff;margin:0 auto 12px}
+.user-name-large{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--text);text-align:center;margin-bottom:4px}
+.user-email{font-size:14px;color:var(--text-secondary);text-align:center;margin-bottom:8px}
+.user-location{font-size:13px;color:var(--text-muted);text-align:center;margin-bottom:24px}
+.user-stats-row{display:flex;gap:8px;margin-bottom:20px}
+.profile-menu-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:10px;cursor:pointer;transition:all .2s}
+.profile-menu-item:active{background:var(--surface3)}
+.menu-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.menu-text{font-size:14px;font-weight:500;color:var(--text)}
+.menu-sub{font-size:12px;color:var(--text-secondary)}
+.menu-arrow{margin-left:auto;color:var(--text-muted);font-size:16px}
+.badge-row{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;justify-content:center}
+.badge-pill{background:var(--surface2);border:1px solid var(--border);border-radius:100px;padding:6px 14px;font-size:12px;color:var(--text-secondary)}
+.badge-pill.earned{background:var(--accent-dim);border-color:#3a6025;color:var(--accent-light)}
+.chat-header{padding:14px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)}
+.chat-messages{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:12px;scrollbar-width:none}
+.chat-messages::-webkit-scrollbar{display:none}
+.msg-bubble{max-width:78%;padding:12px 14px;border-radius:16px;font-size:14px;line-height:1.55}
+.msg-bubble.from-user{background:var(--nav-active);color:#fff;margin-left:auto;border-bottom-right-radius:4px}
+.msg-bubble.from-shelter{background:var(--surface2);color:var(--text);border-bottom-left-radius:4px}
+.msg-time{font-size:10px;opacity:0.5;margin-top:4px}
+.typing-indicator{display:flex;gap:4px;padding:12px 14px;background:var(--surface2);border-radius:16px;width:fit-content;align-items:center}
+.typing-dot{width:7px;height:7px;background:var(--text-muted);border-radius:50%;animation:typingBounce 1.2s infinite}
+.typing-dot:nth-child(2){animation-delay:.2s}
+.typing-dot:nth-child(3){animation-delay:.4s}
+@keyframes typingBounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
+.chat-input-bar{padding:12px 16px 28px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:center;background:var(--bg)}
+.chat-input{flex:1;background:var(--surface2);border:1.5px solid var(--border);border-radius:100px;padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);outline:none}
+.chat-input:focus{border-color:#7db3f5}
+.chat-send-btn{width:40px;height:40px;background:var(--accent);border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;flex-shrink:0}
+.quick-reply{display:flex;gap:8px;padding:10px 16px 0;overflow-x:auto;scrollbar-width:none}
+.quick-reply::-webkit-scrollbar{display:none}
+.qr-btn{white-space:nowrap;padding:8px 14px;border-radius:100px;font-size:13px;border:1.5px solid var(--border);background:transparent;color:var(--text-secondary);cursor:pointer;font-family:'DM Sans',sans-serif}
+.qr-btn:active{background:var(--surface2)}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);z-index:100;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
+.modal-overlay.show{opacity:1;pointer-events:all}
+.modal-sheet{background:var(--surface);border-radius:24px 24px 0 0;padding:20px 20px 36px;width:390px;max-height:85vh;overflow-y:auto;transform:translateY(30px);transition:transform .35s cubic-bezier(0.34,1.56,0.64,1)}
+.modal-overlay.show .modal-sheet{transform:translateY(0)}
+.modal-handle{width:36px;height:4px;background:var(--border);border-radius:100px;margin:0 auto 18px}
+.modal-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:6px}
+.modal-sub{font-size:14px;color:var(--text-secondary);margin-bottom:20px}
+.modal-close-btn{width:100%;padding:14px;background:var(--surface3);border:1px solid var(--border);border-radius:14px;color:var(--text);font-family:'Syne',sans-serif;font-size:15px;font-weight:600;cursor:pointer;margin-top:16px}
+.toast{position:fixed;bottom:110px;left:50%;transform:translateX(-50%);background:var(--surface3);border:1px solid var(--border);color:var(--text);padding:12px 20px;border-radius:100px;font-size:14px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .3s;white-space:nowrap;z-index:999}
+.toast.show{opacity:1}
+.loading-overlay{position:fixed;inset:0;background:rgba(20,20,20,0.9);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:14px;color:var(--text-secondary);font-family:'DM Sans',sans-serif}
+.notif-item{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;gap:12px;cursor:pointer;transition:background .2s}
+.notif-item:active{background:var(--surface2)}
+.notif-item.unread{background:rgba(109,179,63,0.05)}
+.notif-dot-small{width:8px;height:8px;background:var(--accent);border-radius:50%;margin-top:6px;flex-shrink:0}
+.notif-body{flex:1}
+.notif-title{font-size:14px;font-weight:500;color:var(--text);margin-bottom:3px}
+.notif-sub{font-size:12px;color:var(--text-muted)}
+.article-content{padding:20px;font-size:14px;color:var(--text-secondary);line-height:1.75}
+.article-content h2{font-family:'Syne',sans-serif;font-size:17px;font-weight:600;color:var(--text);margin:20px 0 8px}
+.article-content p{margin-bottom:12px}
+.article-content ul{margin:0 0 14px 18px}
+.article-content li{margin-bottom:6px}
+.article-hero-img{height:160px;display:flex;align-items:center;justify-content:center;font-size:64px;margin:0 20px 6px;border-radius:var(--radius);overflow:hidden}
+.stat-highlight{display:flex;gap:10px;margin:16px 0;flex-wrap:wrap}
+.stat-h-box{flex:1;min-width:80px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;text-align:center}
+.stat-h-val{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--accent-light);margin-bottom:2px}
+.stat-h-label{font-size:11px;color:var(--text-muted)}
+.sos-banner{margin:0 20px 20px;background:#2a1010;border:1px solid #5a2020;border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer}
+.map-preview{margin:0 20px 20px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);height:120px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden}
+.map-grid{position:absolute;inset:0;opacity:0.08;background-image:linear-gradient(var(--text) 1px,transparent 1px),linear-gradient(90deg,var(--text) 1px,transparent 1px);background-size:30px 30px}
+.map-pin{font-size:22px;z-index:1}
+.map-label{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:12px;color:var(--text-secondary);background:var(--surface3);padding:4px 12px;border-radius:100px;z-index:1;white-space:nowrap}
+.tips-row{display:flex;gap:10px;overflow-x:auto;padding:0 20px 20px;scrollbar-width:none}
+.tips-row::-webkit-scrollbar{display:none}
+.tip-card{min-width:130px;background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:14px;flex-shrink:0;cursor:pointer}
+.tip-emoji{font-size:24px;margin-bottom:8px}
+.tip-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px}
+.tip-sub{font-size:11px;color:var(--text-muted);line-height:1.4}
+.review-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:10px}
+.review-stars{font-size:12px;margin-bottom:6px;color:#f5c070}
+.review-text{font-size:13px;color:var(--text-secondary);line-height:1.5;margin-bottom:6px}
+.review-author{font-size:11px;color:var(--text-muted)}
+.section-header{display:flex;justify-content:space-between;align-items:center;padding:0 20px 12px}
+.section-see-all{font-size:13px;color:#7db3f5;cursor:pointer}
+.impact-card{margin:0 20px 16px;background:linear-gradient(135deg,#1a2a3a,#2a3a1a);border:1px solid #3a4a3a;border-radius:var(--radius);padding:16px}
+.impact-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--text);margin-bottom:12px}
+.impact-row{display:flex;gap:10px}
+.impact-item{flex:1;text-align:center}
+.impact-num{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--accent-light)}
+.impact-label{font-size:11px;color:var(--text-muted);margin-top:2px}
+.vol-hero{margin:0 20px 20px;background:linear-gradient(135deg,#1a2a3a,#0a1a2a);border:1px solid #2a3a4a;border-radius:var(--radius);padding:20px;text-align:center}
+.vol-hero-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:#fff;margin-bottom:6px}
+.vol-hero-sub{font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:16px}
+.vol-stat-row{display:flex;justify-content:center;gap:24px}
+.vol-stat{text-align:center}
+.vol-stat-num{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--accent-light)}
+.vol-stat-label{font-size:10px;color:rgba(255,255,255,0.5);margin-top:2px}
+.vol-role-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .2s}
+.vol-role-card:active{background:var(--surface3)}
+.vol-role-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.vol-role-name{font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px}
+.vol-role-sub{font-size:12px;color:var(--text-secondary)}
+.vol-role-spots{font-size:11px;font-weight:600;padding:3px 8px;border-radius:100px;margin-left:auto;white-space:nowrap}
+.spots-open{background:var(--accent-dim);color:var(--accent-light)}
+.spots-limited{background:#3a2a10;color:#f5c070}
+.spots-full{background:#2a1010;color:#f08080}
+.vol-event-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px}
+.vol-event-date{font-size:11px;font-weight:600;color:#7db3f5;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+.vol-event-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px}
+.vol-event-sub{font-size:12px;color:var(--text-secondary);margin-bottom:10px}
+.vol-event-footer{display:flex;gap:8px;align-items:center}
+.vol-attend-btn{padding:8px 16px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-family:'Syne',sans-serif;font-size:13px;font-weight:600;cursor:pointer}
+.vol-attendees{font-size:12px;color:var(--text-muted)}
+.foster-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;cursor:pointer;transition:all .2s}
+.foster-card:active{transform:scale(0.98)}
+.foster-card-top{display:flex;gap:14px;align-items:flex-start;margin-bottom:10px}
+.foster-emoji{font-size:36px;width:56px;height:56px;background:var(--surface3);border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.foster-name{font-family:'Syne',sans-serif;font-size:16px;font-weight:600;color:var(--text);margin-bottom:3px}
+.foster-sub{font-size:12px;color:var(--text-secondary);margin-bottom:6px}
+.foster-urgency-badge{display:inline-block;padding:3px 8px;border-radius:100px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.urgency-high{background:#3a1010;color:#f08080}
+.urgency-med{background:#3a2a10;color:#f5c070}
+.urgency-low{background:var(--accent-dim);color:var(--accent-light)}
+.foster-details-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;padding-top:10px;border-top:1px solid var(--border)}
+.foster-detail-item{font-size:11px;color:var(--text-muted)}
+.foster-detail-item span{color:var(--text);font-weight:500}
+.leaderboard-row{display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid var(--border)}
+.lb-rank{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text-muted);width:24px;text-align:center;flex-shrink:0}
+.lb-rank.top{color:var(--orange)}
+.lb-avatar{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;flex-shrink:0}
+.lb-name{font-size:14px;font-weight:500;color:var(--text)}
+.lb-sub{font-size:11px;color:var(--text-muted)}
+.lb-points{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--accent-light);margin-left:auto}
+.health-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:10px}
+.health-card-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.health-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+.health-row:last-child{border-bottom:none}
+.health-label{font-size:12px;color:var(--text-secondary)}
+.health-value{font-size:12px;font-weight:600;color:var(--text)}
+.health-status{font-size:10px;font-weight:600;padding:2px 8px;border-radius:100px}
+.hs-good{background:var(--accent-dim);color:var(--accent-light)}
+.hs-due{background:#3a2a10;color:#f5c070}
+.hs-overdue{background:#3a1010;color:#f08080}
+.gallery-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;padding:0 20px;margin-bottom:16px}
+.gallery-item{height:80px;background:var(--surface3);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;transition:all .2s}
+.gallery-item:active{transform:scale(0.95)}
+.gallery-item:first-child{grid-column:1/3;height:120px;font-size:48px}
+.weather-widget{margin:0 20px 16px;background:linear-gradient(135deg,#1a2040,#0a1530);border:1px solid #2a3060;border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;gap:14px}
+.weather-icon{font-size:32px}
+.weather-info{flex:1}
+.weather-temp{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:#fff}
+.weather-desc{font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:2px}
+.weather-dog-tip{font-size:11px;color:#7db3f5}
+.quiz-card{margin:0 20px 16px;background:linear-gradient(135deg,#2a1a40,#1a0a30);border:1px solid #4a2a70;border-radius:var(--radius);padding:16px;cursor:pointer}
+.quiz-label{font-size:11px;font-weight:600;color:var(--purple);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.quiz-question{font-family:'Syne',sans-serif;font-size:15px;font-weight:600;color:#fff;margin-bottom:12px;line-height:1.4}
+.quiz-options{display:flex;flex-direction:column;gap:8px}
+.quiz-option{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:10px 14px;font-size:13px;color:rgba(255,255,255,0.8);cursor:pointer;transition:all .2s}
+.quiz-option:active,.quiz-option.selected{background:rgba(192,132,252,0.2);border-color:var(--purple)}
+.quiz-option.correct{background:rgba(109,179,63,0.2);border-color:var(--accent-light);color:var(--accent-light)}
+.quiz-option.wrong{background:rgba(224,82,82,0.15);border-color:#f08080;color:#f08080}
+.horizontal-scroll{display:flex;gap:12px;padding:0 20px 16px;overflow-x:auto;scrollbar-width:none}
+.horizontal-scroll::-webkit-scrollbar{display:none}
+.h-dog-card{min-width:140px;background:var(--surface2);border:1px solid var(--border);border-radius:14px;overflow:hidden;flex-shrink:0;cursor:pointer;transition:all .2s}
+.h-dog-card:active{transform:scale(0.96)}
+.h-dog-img{height:90px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:36px}
+.h-dog-body{padding:10px}
+.h-dog-name{font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--text)}
+.h-dog-sub{font-size:11px;color:var(--text-secondary);margin-top:2px}
+.urgent-banner{margin:0 20px 16px;background:linear-gradient(135deg,#2a1010,#1a0808);border:1px solid #5a2020;border-radius:var(--radius);padding:14px 16px}
+.urgent-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#f08080;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.urgent-dogs{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin-top:10px}
+.urgent-dogs::-webkit-scrollbar{display:none}
+.urgent-dog-chip{background:rgba(240,128,128,0.1);border:1px solid rgba(240,128,128,0.2);border-radius:100px;padding:5px 12px;font-size:12px;color:#f08080;white-space:nowrap;cursor:pointer}
+.story-card{min-width:260px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;flex-shrink:0}
+.story-dog-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.story-emoji{font-size:28px;width:44px;height:44px;background:var(--surface3);border-radius:10px;display:flex;align-items:center;justify-content:center}
+.story-name{font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--text)}
+.story-adopted{font-size:11px;color:var(--accent-light)}
+.story-text{font-size:12px;color:var(--text-secondary);line-height:1.55;margin-bottom:8px}
+.story-author{font-size:11px;color:var(--text-muted)}
+.poll-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin:0 20px 16px}
+.poll-question{font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--text);margin-bottom:12px}
+.poll-option{display:flex;align-items:center;gap:10px;margin-bottom:8px;cursor:pointer}
+.poll-bar-bg{flex:1;height:8px;background:var(--surface3);border-radius:100px;overflow:hidden}
+.poll-bar-fill{height:100%;background:var(--accent);border-radius:100px;transition:width 0.6s ease}
+.poll-pct{font-size:12px;font-weight:600;color:var(--text-secondary);width:32px;text-align:right}
+.poll-label{font-size:12px;color:var(--text-secondary);width:80px;flex-shrink:0}
+.faq-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:8px;cursor:pointer}
+.faq-q{font-size:13px;font-weight:600;color:var(--text);margin-bottom:0}
+.faq-a{font-size:12px;color:var(--text-secondary);margin-top:8px;line-height:1.55;display:none}
+.faq-item.open .faq-a{display:block}
+
+/* ── LANDSCAPE / DESKTOP LAYOUT ─────────────────────────────────────── */
+@media (min-width: 700px) {
+  body { align-items: stretch; }
+
+  /* Shell becomes a flex row */
+  .phone-shell {
+    flex-direction: row !important;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* Status bar hidden in landscape */
+  .status-bar { display: none; }
+
+  /* ── SIDEBAR NAV ── */
+  #sidebar-nav {
+    flex-direction: column !important;
+    width: 200px !important;
+    min-width: 200px !important;
+    height: 100vh !important;
+    border-top: none !important;
+    border-right: 1px solid var(--border) !important;
+    border-bottom: none !important;
+    padding: 24px 12px 24px !important;
+    gap: 4px !important;
+    background: var(--surface) !important;
+    overflow: hidden;
+    order: -1;
+    flex-shrink: 0;
+  }
+  #sidebar-nav::before {
+    content: '🐾 PawFinder';
+    display: block;
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text);
+    padding: 0 14px 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 12px;
+    width: 100%;
+  }
+  #sidebar-nav .nav-item {
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 10px 14px !important;
+    border-radius: 12px;
+    width: 100%;
+  }
+  #sidebar-nav .nav-item.active { background: rgba(58,90,138,0.3); }
+  #sidebar-nav .nav-icon {
+    width: 34px !important;
+    height: 34px !important;
+    font-size: 18px !important;
+    flex-shrink: 0;
+  }
+  #sidebar-nav .nav-label {
+    font-size: 14px !important;
+    color: var(--text-secondary) !important;
+    font-weight: 500;
+  }
+  #sidebar-nav .nav-item.active .nav-label { color: #7db3f5 !important; }
+
+  /* ── PAGES ── */
+  .page {
+    flex: 1 !important;
+    flex-direction: column !important;
+    height: 100vh !important;
+    overflow: hidden;
+    min-width: 0;
+  }
+
+  /* ── HOME: sidebar + scrollable content ── */
+  #page-home {
+    flex-direction: row !important;
+    overflow: hidden;
+  }
+  #page-home > .scroll-area {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 100vh;
+    padding-bottom: 24px !important;
+  }
+
+  /* Dog grid 4 columns on landscape */
+  .dog-grid { grid-template-columns: repeat(4, 1fr) !important; }
+
+  /* Wider padding for content */
+  .home-header { padding: 20px 28px 12px !important; }
+  .greeting-title { font-size: 30px !important; }
+  .weather-widget { margin: 0 28px 16px !important; }
+  .impact-card { margin: 0 28px 16px !important; }
+  .urgent-banner { margin: 0 28px 16px !important; }
+  .search-bar { margin: 0 28px 16px !important; }
+  .filter-row { padding: 0 28px 16px !important; }
+  .section-title { padding: 0 28px 12px !important; }
+  .section-header { padding: 0 28px 12px !important; }
+  .featured-card { margin: 0 28px 20px !important; }
+  .horizontal-scroll { padding: 0 28px 16px !important; }
+  .tips-row { padding: 0 28px 20px !important; }
+  .sos-banner { margin: 0 28px 20px !important; }
+  .poll-card { margin: 0 28px 16px !important; }
+  .quiz-card { margin: 0 28px 16px !important; }
+  .map-preview { margin: 0 28px 20px !important; height: 140px !important; }
+  .dog-grid { padding: 0 28px !important; gap: 14px !important; }
+  .story-card { min-width: 300px !important; }
+
+  /* Featured card horizontal layout improvement */
+  .featured-dog-img { width: 90px !important; height: 90px !important; font-size: 44px !important; }
+
+  /* ── NON-HOME PAGES: centered single column ── */
+  #page-profile,
+  #page-adoption,
+  #page-shelters,
+  #page-awareness,
+  #page-foster,
+  #page-volunteer,
+  #page-user-profile,
+  #page-notifications,
+  #page-article,
+  #page-dogs {
+    max-width: 100%;
+  }
+  #page-profile .scroll-area,
+  #page-adoption .scroll-area,
+  #page-shelters .scroll-area,
+  #page-awareness .scroll-area,
+  #page-foster .scroll-area,
+  #page-volunteer .scroll-area,
+  #page-user-profile .scroll-area,
+  #page-notifications .scroll-area,
+  #page-article .scroll-area,
+  #page-dogs .scroll-area {
+    max-width: 860px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  /* Profile page improvements */
+  .dog-hero { height: 260px !important; margin: 0 28px 20px !important; }
+  .profile-body { padding: 0 28px !important; }
+  .profile-header { padding: 18px 28px !important; }
+
+  /* Auth page centered */
+  .auth-page {
+    max-width: 480px !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  /* Modal */
+  .modal-sheet { width: 500px !important; border-radius: 24px !important; margin-bottom: 40px !important; }
+}
+</style>
+</head>
+<body>
+<div class="phone-shell" id="app">
+  <div class="status-bar">
+    <span id="clock">9:41</span>
+    <div class="status-right"><span>●●●</span><span>WiFi</span><span>▌</span></div>
+  </div>
+  <div class="loading-overlay" id="loading" style="display:none">
+    <div class="spinner"></div>
+    <div class="loading-text" id="loading-text">Loading…</div>
+  </div>
+
+  <!-- LOGIN -->
+  <div class="page active" id="page-login">
+    <div class="auth-page">
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+        <div class="auth-logo">🐾</div>
+        <div class="auth-title">PawFinder</div>
+        <div class="auth-sub">Find your perfect companion</div>
+        <div class="auth-form">
+          <div class="auth-error" id="login-error"></div>
+          <div><div class="field-label">Email</div><input class="input-field" type="email" id="login-email" placeholder="you@email.com"></div>
+          <div><div class="field-label">Password</div><input class="input-field" type="password" id="login-password" placeholder="••••••••"></div>
+          <button class="btn-primary" onclick="API.auth.login()" style="margin-top:8px">Sign In</button>
+          <button class="btn-secondary" onclick="showPage('page-register')">Create Account</button>
+        </div>
+        <div style="margin:16px 0;background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:14px;text-align:center">
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">Demo credentials</div>
+          <div style="font-size:13px;color:var(--text-secondary)">demo@pawfinder.in &nbsp;·&nbsp; demo123</div>
+        </div>
+        <div class="auth-switch">Quick access: <a onclick="demoLogin()">tap to auto-fill &amp; sign in</a></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REGISTER -->
+  <div class="page" id="page-register">
+    <div style="padding:14px 20px;display:flex;align-items:center;gap:14px">
+      <div class="back-btn" onclick="showPage('page-login')">←</div>
+      <div class="page-title">Create Account</div>
+    </div>
+    <div class="scroll-area">
+      <div style="padding:0 20px">
+        <div class="auth-error" id="register-error"></div>
+        <div style="display:flex;flex-direction:column;gap:14px;padding-top:8px">
+          <div><div class="field-label">Full Name</div><input class="input-field" type="text" id="reg-name" placeholder="Your Name"></div>
+          <div><div class="field-label">Email</div><input class="input-field" type="email" id="reg-email" placeholder="you@email.com"></div>
+          <div><div class="field-label">Phone</div><input class="input-field" type="tel" id="reg-phone" placeholder="+91 9XXXXXXXXX"></div>
+          <div><div class="field-label">City</div><input class="input-field" type="text" id="reg-city" placeholder="Chennai"></div>
+          <div><div class="field-label">Password</div><input class="input-field" type="password" id="reg-password" placeholder="Min 6 characters"></div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px">
+            <div style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;font-weight:500">By creating an account you agree to our</div>
+            <div style="font-size:13px;color:#7db3f5">Terms of Service &amp; Privacy Policy</div>
+          </div>
+          <button class="btn-primary" onclick="API.auth.register()" style="margin-top:8px">Create Account</button>
+        </div>
+      </div>
+      <div style="height:40px"></div>
+    </div>
+  </div>
+
+  <!-- HOME -->
+  <div class="page" id="page-home">
+    <div class="bottom-nav" id="sidebar-nav">
+      <div class="nav-item active" onclick="switchNav(0)"><div class="nav-icon">🐾</div><div class="nav-label">Discover</div></div>
+      <div class="nav-item" onclick="switchNav(1)"><div class="nav-icon">🏠</div><div class="nav-label">Shelters</div></div>
+      <div class="nav-item" onclick="switchNav(2)"><div class="nav-icon">📋</div><div class="nav-label">Adopt</div></div>
+      <div class="nav-item" onclick="switchNav(3)"><div class="nav-icon">🐕</div><div class="nav-label">Foster</div></div>
+      <div class="nav-item" onclick="switchNav(4)"><div class="nav-icon">💚</div><div class="nav-label">Learn</div></div>
+      <div class="nav-item" onclick="switchNav(5)"><div class="nav-icon">👤</div><div class="nav-label">Profile</div></div>
+    </div>
+    <div class="scroll-area">
+      <div class="home-header">
+        <div>
+          <div class="greeting-text" id="greeting-text">Hello, there 👋</div>
+          <div class="greeting-title">Find a companion</div>
+        </div>
+        <div class="header-actions">
+          <div class="icon-btn" onclick="showPage('page-notifications')">🔔<div class="notif-dot" id="notif-dot" style="display:none"></div></div>
+          <div class="avatar-btn" id="user-avatar" onclick="switchNav(5)">AD</div>
+        </div>
+      </div>
+      <div class="weather-widget">
+        <div class="weather-icon">🌤️</div>
+        <div class="weather-info">
+          <div class="weather-temp">31°C</div>
+          <div class="weather-desc">Partly cloudy · Chennai</div>
+          <div class="weather-dog-tip">🐾 Good morning walk weather!</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:11px;color:rgba(255,255,255,0.4)">Feels like</div>
+          <div style="font-family:'Syne',sans-serif;font-size:16px;color:#fff;font-weight:600">33°C</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px">Humidity 74%</div>
+        </div>
+      </div>
+      <div class="impact-card">
+        <div class="impact-title">🐾 PawFinder impact in 2024</div>
+        <div class="impact-row">
+          <div class="impact-item"><div class="impact-num">847</div><div class="impact-label">Dogs rehomed</div></div>
+          <div class="impact-item"><div class="impact-num">1,203</div><div class="impact-label">Rescues made</div></div>
+          <div class="impact-item"><div class="impact-num">4,290</div><div class="impact-label">Volunteers</div></div>
+          <div class="impact-item"><div class="impact-num">₹28L</div><div class="impact-label">Raised</div></div>
+        </div>
+      </div>
+      <div class="urgent-banner">
+        <div class="urgent-title">🚨 Urgent — needs immediate home</div>
+        <div style="font-size:12px;color:rgba(240,128,128,0.7)">These dogs are running out of shelter space</div>
+        <div class="urgent-dogs">
+          <div class="urgent-dog-chip" onclick="openDogProfile('dog-6')">🐕 Charlie · 7 yrs</div>
+          <div class="urgent-dog-chip" onclick="openDogProfile('dog-11')">🐕 Tiger · 9 yrs</div>
+          <div class="urgent-dog-chip" onclick="openDogProfile('dog-16')">🐕 Simba · 8 yrs</div>
+          <div class="urgent-dog-chip" onclick="openDogProfile('dog-19')">🦮 Ranger · 6 yrs</div>
+        </div>
+      </div>
+      <div class="search-bar">
+        <span style="font-size:16px;color:var(--text-muted)">🔍</span>
+        <input type="text" placeholder="Search by breed, age, location…" id="search-input" oninput="handleSearch(this.value)">
+      </div>
+      <div class="filter-row">
+        <div class="filter-chip active" onclick="setFilter(this,'all')">All</div>
+        <div class="filter-chip" onclick="setFilter(this,'puppy')">🐶 Puppies</div>
+        <div class="filter-chip" onclick="setFilter(this,'adult')">Adult</div>
+        <div class="filter-chip" onclick="setFilter(this,'senior')">Senior</div>
+        <div class="filter-chip" onclick="setFilter(this,'near')">📍 Near me</div>
+        <div class="filter-chip" onclick="setFilter(this,'female')">♀ Female</div>
+        <div class="filter-chip" onclick="setFilter(this,'male')">♂ Male</div>
+        <div class="filter-chip" onclick="setFilter(this,'vaccinated')">💉 Vaccinated</div>
+        <div class="filter-chip" onclick="setFilter(this,'small')">Small breed</div>
+        <div class="filter-chip" onclick="setFilter(this,'large')">Large breed</div>
+        <div class="filter-chip" onclick="setFilter(this,'trained')">🏅 Trained</div>
+      </div>
+      <div class="section-title">Featured dog</div>
+      <div class="featured-card" onclick="openDogProfile('dog-1')">
+        <div class="featured-dog-img">🐕</div>
+        <div class="featured-info">
+          <div class="featured-name">Bruno</div>
+          <div class="featured-sub">Labrador mix · 2 yrs · Chennai</div>
+          <div class="verified-badge">🏥 Blue Cross NGO · Verified</div>
+        </div>
+        <button class="adopt-btn" onclick="event.stopPropagation();openDogProfile('dog-1')">Adopt</button>
+      </div>
+      <div class="section-header">
+        <div class="section-title" style="padding:0;margin:0">🌟 Success stories</div>
+        <div class="section-see-all" onclick="switchNav(4)">More →</div>
+      </div>
+      <div class="horizontal-scroll" style="margin-bottom:8px">
+        <div class="story-card"><div class="story-dog-row"><div class="story-emoji">🐕</div><div><div class="story-name">Bruno</div><div class="story-adopted">Adopted Jan 2024 · Adyar</div></div></div><div class="story-text">"Bruno settled within 3 days and now greets us at the door every evening. Best decision our family ever made!"</div><div class="story-author">— Priya S. &amp; family</div></div>
+        <div class="story-card"><div class="story-dog-row"><div class="story-emoji">🐩</div><div><div class="story-name">Coco</div><div class="story-adopted">Adopted Jan 2024 · T. Nagar</div></div></div><div class="story-text">"She was house-trained from day one. Coco has transformed our apartment into a home full of warmth."</div><div class="story-author">— Kavitha L.</div></div>
+        <div class="story-card"><div class="story-dog-row"><div class="story-emoji">🦮</div><div><div class="story-name">Rocky</div><div class="story-adopted">Adopted Dec 2023 · Porur</div></div></div><div class="story-text">"Rocky is protective, loyal, and incredible with our kids. He's the guardian we didn't know we needed."</div><div class="story-author">— Suresh P. &amp; family</div></div>
+        <div class="story-card"><div class="story-dog-row"><div class="story-emoji">🐕‍🦺</div><div><div class="story-name">Luna</div><div class="story-adopted">Adopted Apr 2024 · Besant Nagar</div></div></div><div class="story-text">"Luna loves beach walks almost as much as we do. She picked us as much as we picked her."</div><div class="story-author">— Nisha T.</div></div>
+      </div>
+      <div class="sos-banner" onclick="showToast('Calling emergency rescue line… 📞')">
+        <div style="font-size:24px">🚨</div>
+        <div><div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:#f08080">Found an injured stray?</div><div style="font-size:12px;color:#a06060">Tap to report &amp; connect with a rescue team</div></div>
+        <div style="margin-left:auto;font-size:20px;color:#f08080">›</div>
+      </div>
+      <div class="poll-card">
+        <div class="poll-question">🗳️ What's your top reason for adopting?</div>
+        <div class="poll-option" onclick="votePoll(this,0)"><div class="poll-label">Companionship</div><div class="poll-bar-bg"><div class="poll-bar-fill" style="width:62%"></div></div><div class="poll-pct">62%</div></div>
+        <div class="poll-option" onclick="votePoll(this,1)"><div class="poll-label">Save a life</div><div class="poll-bar-bg"><div class="poll-bar-fill" style="width:24%"></div></div><div class="poll-pct">24%</div></div>
+        <div class="poll-option" onclick="votePoll(this,2)"><div class="poll-label">Family pet</div><div class="poll-bar-bg"><div class="poll-bar-fill" style="width:10%"></div></div><div class="poll-pct">10%</div></div>
+        <div class="poll-option" onclick="votePoll(this,3)"><div class="poll-label">Other</div><div class="poll-bar-bg"><div class="poll-bar-fill" style="width:4%"></div></div><div class="poll-pct">4%</div></div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:8px">2,847 votes · Poll closes Sunday</div>
+      </div>
+      <div class="section-header">
+        <div class="section-title" style="padding:0;margin:0">Quick tips</div>
+        <div class="section-see-all" onclick="switchNav(4)">See all →</div>
+      </div>
+      <div class="tips-row">
+        <div class="tip-card" onclick="openArticle('a1')"><div class="tip-emoji">🏠</div><div class="tip-title">Prep your home</div><div class="tip-sub">Before your dog arrives</div></div>
+        <div class="tip-card" onclick="openArticle('a3')"><div class="tip-emoji">💉</div><div class="tip-title">Vaccines</div><div class="tip-sub">Full schedule guide</div></div>
+        <div class="tip-card" onclick="openArticle('a5')"><div class="tip-emoji">🐾</div><div class="tip-title">Body language</div><div class="tip-sub">Read your dog</div></div>
+        <div class="tip-card" onclick="openArticle('a7')"><div class="tip-emoji">🍚</div><div class="tip-title">Nutrition</div><div class="tip-sub">Feeding basics</div></div>
+        <div class="tip-card" onclick="openArticle('a9')"><div class="tip-emoji">🧠</div><div class="tip-title">Training 101</div><div class="tip-sub">Positive reinforcement</div></div>
+      </div>
+      <div class="quiz-card" id="quiz-card">
+        <div class="quiz-label">🧠 Dog knowledge quiz</div>
+        <div class="quiz-question" id="quiz-q">How long is the average gestation period of a dog?</div>
+        <div class="quiz-options" id="quiz-opts">
+          <div class="quiz-option" onclick="answerQuiz(this,false)">45 days</div>
+          <div class="quiz-option" onclick="answerQuiz(this,true)">63 days</div>
+          <div class="quiz-option" onclick="answerQuiz(this,false)">90 days</div>
+          <div class="quiz-option" onclick="answerQuiz(this,false)">30 days</div>
+        </div>
+      </div>
+      <div class="section-header" style="padding-bottom:10px">
+        <div class="section-title" style="padding:0;margin:0">Shelters near you</div>
+        <div class="section-see-all" onclick="switchNav(1)">View all →</div>
+      </div>
+      <div class="map-preview" onclick="switchNav(1)">
+        <div class="map-grid"></div>
+        <div class="map-pin">📍</div>
+        <div class="map-label">6 shelters within 20 km</div>
+      </div>
+      <div class="section-header">
+        <div class="section-title" style="padding:0;margin:0">Recently added</div>
+        <div class="section-see-all" onclick="showAllDogs()">See all →</div>
+      </div>
+      <div class="horizontal-scroll">
+        <div class="h-dog-card" onclick="openDogProfile('dog-20')"><div class="h-dog-img">🐶</div><div class="h-dog-body"><div class="h-dog-name">Biscuit</div><div class="h-dog-sub">Indie · 5 mo · new!</div></div></div>
+        <div class="h-dog-card" onclick="openDogProfile('dog-21')"><div class="h-dog-img">🐕</div><div class="h-dog-body"><div class="h-dog-name">Apollo</div><div class="h-dog-sub">Indie · 3 yrs</div></div></div>
+        <div class="h-dog-card" onclick="openDogProfile('dog-22')"><div class="h-dog-img">🐕‍🦺</div><div class="h-dog-body"><div class="h-dog-name">Honey</div><div class="h-dog-sub">Labrador · 4 yrs</div></div></div>
+        <div class="h-dog-card" onclick="openDogProfile('dog-12')"><div class="h-dog-img">🐶</div><div class="h-dog-body"><div class="h-dog-name">Peanut</div><div class="h-dog-sub">Pom mix · 3 mo</div></div></div>
+        <div class="h-dog-card" onclick="openDogProfile('dog-23')"><div class="h-dog-img">🦮</div><div class="h-dog-body"><div class="h-dog-name">Storm</div><div class="h-dog-sub">GSD mix · 2 yrs</div></div></div>
+      </div>
+      <div class="section-header">
+        <div class="section-title" style="padding:0;margin:0">Available near you</div>
+        <div class="section-see-all" onclick="showAllDogs()">See all →</div>
+      </div>
+      <div class="dog-grid" id="dog-grid"></div>
+      <div style="height:20px"></div>
+    </div>
+  </div>
+
+  <!-- DOG PROFILE -->
+  <div class="page" id="page-profile">
+    <div class="profile-header">
+      <div class="back-btn" onclick="goBack()">←</div>
+      <div class="page-title">Dog profile</div>
+      <div class="heart-btn" id="heart-btn" onclick="toggleFavourite()">🤍</div>
+    </div>
+    <div class="scroll-area">
+      <div class="dog-hero" id="profile-hero">🐕</div>
+      <div class="profile-body">
+        <div class="profile-name-row">
+          <div class="profile-name" id="profile-name">Bruno</div>
+          <div class="verified-pill">✓ Verified rescue</div>
+        </div>
+        <div class="profile-location" id="profile-location"></div>
+        <div class="tags-row" id="profile-tags"></div>
+        <div class="stats-row">
+          <div class="stat-box"><div class="stat-val" id="p-age">2 yrs</div><div class="stat-label">Age</div></div>
+          <div class="stat-box"><div class="stat-val" id="p-gender">Male</div><div class="stat-label">Gender</div></div>
+          <div class="stat-box"><div class="stat-val" id="p-weight">18 kg</div><div class="stat-label">Weight</div></div>
+          <div class="stat-box"><div class="stat-val" id="p-size">Medium</div><div class="stat-label">Size</div></div>
+        </div>
+        <div class="stats-row">
+          <div class="stat-box" style="text-align:left;padding:12px 14px">
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">Good with</div>
+            <div id="p-goodwith" style="font-size:13px;color:var(--text-secondary)">Kids · Cats · Dogs</div>
+          </div>
+          <div class="stat-box" style="text-align:left;padding:12px 14px">
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">Energy level</div>
+            <div id="p-energy" style="font-size:13px;color:var(--accent-light)">High 🏃</div>
+          </div>
+        </div>
+        <div class="about-title">About <span id="profile-about-name">Bruno</span></div>
+        <div class="about-text" id="profile-about"></div>
+        <div class="about-title">Health &amp; Medical</div>
+        <div class="health-card" style="margin-bottom:16px"><div id="profile-health-rows"></div></div>
+        <div class="about-title">Care needs</div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:20px">
+          <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center"><span style="font-size:16px">🚶</span><span style="font-size:13px;color:var(--text-secondary)" id="p-exercise">2 walks per day</span></div>
+          <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center"><span style="font-size:16px">✂️</span><span style="font-size:13px;color:var(--text-secondary)" id="p-grooming">Low maintenance</span></div>
+          <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center"><span style="font-size:16px">🏠</span><span style="font-size:13px;color:var(--text-secondary)" id="p-space">Apartment-friendly</span></div>
+          <div style="display:flex;gap:8px;align-items:center"><span style="font-size:16px">🍚</span><span style="font-size:13px;color:var(--text-secondary)" id="p-diet">Dry kibble · 2x daily</span></div>
+        </div>
+        <div class="about-title">Personality</div>
+        <div id="profile-traits" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px"></div>
+        <div class="about-title">Rescue shelter</div>
+        <div class="shelter-card" onclick="showToast('Opening shelter details…')">
+          <div class="shelter-icon">🏥</div>
+          <div><div class="shelter-name" id="p-shelter-name">Blue Cross of India</div><div class="shelter-sub" id="p-shelter-sub">Open · 9AM–5PM · 2.3km</div></div>
+          <div style="margin-left:auto;color:var(--text-muted)">›</div>
+        </div>
+        <div class="about-title">You might also like</div>
+        <div class="horizontal-scroll" id="similar-dogs" style="padding:0 0 16px"></div>
+        <div class="about-title">Adopter reviews</div>
+        <div id="profile-reviews"></div>
+        <div style="height:10px"></div>
+      </div>
+    </div>
+    <div class="profile-actions">
+      <button class="chat-btn" onclick="openChatWithShelter()">💬 Chat</button>
+      <button class="start-btn" onclick="showPage('page-adoption')">Start adoption →</button>
+    </div>
+  </div>
+
+  <!-- AI CHAT -->
+  <div class="page" id="page-chat">
+    <div class="chat-header">
+      <div class="back-btn" onclick="goBack()">←</div>
+      <div class="shelter-icon" style="width:36px;height:36px;font-size:18px">🏥</div>
+      <div style="flex:1">
+        <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:600;color:var(--text)" id="chat-shelter-name">Blue Cross of India</div>
+        <div style="font-size:11px;color:var(--accent-light)">🟢 Online · AI-assisted</div>
+      </div>
+      <div style="font-size:12px;color:var(--text-muted);cursor:pointer" onclick="showToast('Calling shelter…')">📞</div>
+    </div>
+    <div class="quick-reply" id="quick-replies">
+      <div class="qr-btn" onclick="quickReply('How do I schedule a visit?')">Schedule visit?</div>
+      <div class="qr-btn" onclick="quickReply('Is the dog vaccinated?')">Vaccination?</div>
+      <div class="qr-btn" onclick="quickReply('What are the adoption fees?')">Fees?</div>
+      <div class="qr-btn" onclick="quickReply('Can I foster first?')">Foster first?</div>
+      <div class="qr-btn" onclick="quickReply('What food does the dog eat?')">Diet?</div>
+    </div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-input-bar">
+      <input class="chat-input" id="chat-input" placeholder="Message the shelter…" onkeydown="if(event.key==='Enter')sendMessage()">
+      <button class="chat-send-btn" onclick="sendMessage()">➤</button>
+    </div>
+  </div>
+
+  <!-- ADOPTION FORM -->
+  <div class="page" id="page-adoption">
+    <div class="adoption-header">
+      <div class="back-btn" onclick="showPage('page-profile')">←</div>
+      <div class="page-title">Adoption application</div>
+    </div>
+    <div class="stepper">
+      <div class="step-item"><div class="step-circle done">✓</div><div class="step-label">Info</div></div>
+      <div class="step-line done"></div>
+      <div class="step-item"><div class="step-circle active">2</div><div class="step-label active">Home</div></div>
+      <div class="step-line"></div>
+      <div class="step-item"><div class="step-circle pending">3</div><div class="step-label">Docs</div></div>
+      <div class="step-line"></div>
+      <div class="step-item"><div class="step-circle pending">4</div><div class="step-label">Review</div></div>
+    </div>
+    <div class="scroll-area">
+      <div class="adoption-dog-card">
+        <div style="font-size:32px" id="adopt-dog-emoji">🐕</div>
+        <div><div class="adopt-dog-name" id="adopt-dog-name">Adopting Bruno</div><div class="adopt-dog-sub" id="adopt-dog-shelter">Blue Cross of India · Chennai</div></div>
+        <div class="step-badge">Step 2/4</div>
+      </div>
+      <div style="margin:0 20px 16px;background:var(--accent-dim);border:1px solid #3a6025;border-radius:var(--radius-sm);padding:12px 14px">
+        <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:var(--accent-light);margin-bottom:8px">✅ Pre-adoption checklist</div>
+        <div style="font-size:12px;color:rgba(168,212,112,0.8);line-height:1.8">
+          <div>☑ Have you spoken to all family members?</div>
+          <div>☑ Is your landlord okay with pets?</div>
+          <div>☑ Do you have a vet in mind?</div>
+          <div>☑ Budget for food, vet visits, grooming?</div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title">Home environment</div>
+        <div class="field-label">Type of residence</div>
+        <div class="chip-group">
+          <div class="choice-chip selected" onclick="selectChip(this,'residence')">Apartment</div>
+          <div class="choice-chip" onclick="selectChip(this,'residence')">House</div>
+          <div class="choice-chip" onclick="selectChip(this,'residence')">Villa</div>
+          <div class="choice-chip" onclick="selectChip(this,'residence')">Farmhouse</div>
+        </div>
+        <div class="field-label">Do you have outdoor space?</div>
+        <div class="chip-group">
+          <div class="choice-chip selected" onclick="selectChip(this,'outdoor')">Yes</div>
+          <div class="choice-chip" onclick="selectChip(this,'outdoor')">No</div>
+          <div class="choice-chip" onclick="selectChip(this,'outdoor')">Shared balcony</div>
+        </div>
+        <div class="field-label">Experience with dogs</div>
+        <div class="chip-group">
+          <div class="choice-chip selected" onclick="selectChip(this,'exp')">First time</div>
+          <div class="choice-chip" onclick="selectChip(this,'exp')">Some</div>
+          <div class="choice-chip" onclick="selectChip(this,'exp')">Experienced</div>
+        </div>
+        <div class="two-col">
+          <div><div class="field-label" style="font-size:13px">Other pets</div><select class="input-field" style="cursor:pointer"><option>None</option><option>1 dog</option><option>1 cat</option><option>Multiple</option></select></div>
+          <div><div class="field-label" style="font-size:13px">Children at home</div><select class="input-field" style="cursor:pointer"><option>None</option><option>Yes, 1</option><option>2</option><option>3+</option></select></div>
+        </div>
+        <div class="field-label">Daily hours dog will be alone</div>
+        <select class="select-field"><option value="" disabled selected>Select range…</option><option>0–2 hours</option><option>2–4 hours</option><option>4–6 hours</option><option>6–8 hours</option><option>8+ hours</option></select>
+        <div class="field-label">Why do you want to adopt?</div>
+        <textarea class="input-field" rows="3" placeholder="Tell us about yourself and why you want to give this dog a forever home…" style="resize:none;margin-bottom:16px"></textarea>
+      </div>
+      <div class="divider" style="margin:0 20px 14px"></div>
+      <div class="docs-section">
+        <div class="docs-title">Documents (step 3 preview)</div>
+        <div class="doc-row"><div class="doc-icon">🪪</div><div><div class="doc-name">Government ID</div><div class="doc-sub">Aadhaar / Voter ID / Passport</div></div><div class="doc-status-ok">Uploaded ✓</div></div>
+        <div class="doc-row" onclick="uploadDoc(this,'addr-status')"><div class="doc-icon">🏠</div><div><div class="doc-name">Address proof</div><div class="doc-sub">Utility bill / rental agreement</div></div><div class="doc-status-pending" id="addr-status">Tap to upload</div></div>
+        <div class="doc-row" onclick="uploadDoc(this,'income-status')"><div class="doc-icon">💼</div><div><div class="doc-name">Income proof</div><div class="doc-sub">Salary slip / bank statement</div></div><div class="doc-status-pending" id="income-status">Tap to upload</div></div>
+        <div class="doc-row" onclick="uploadDoc(this,'photo-status')"><div class="doc-icon">📷</div><div><div class="doc-name">Home photos</div><div class="doc-sub">3–5 photos of living space</div></div><div class="doc-status-pending" id="photo-status">Tap to upload</div></div>
+      </div>
+      <div style="height:12px"></div>
+    </div>
+    <div class="adoption-footer">
+      <button class="continue-btn" onclick="API.adoption.submit()">Submit Application →</button>
+      <div class="save-later" onclick="showToast('Draft saved 💾')">Save draft &amp; continue later</div>
+    </div>
+  </div>
+
+  <!-- SHELTERS -->
+  <div class="page" id="page-shelters">
+    <div class="scroll-area">
+      <div class="shelters-header">
+        <div class="shelters-title">Shelters 🏥</div>
+        <div class="search-bar" style="margin:0 0 12px"><span style="font-size:16px;color:var(--text-muted)">🔍</span><input type="text" placeholder="Search shelters…" oninput="filterShelters(this.value)"></div>
+        <div style="display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px">
+          <div class="filter-chip active" onclick="setShelterFilter(this,'all')">All</div>
+          <div class="filter-chip" onclick="setShelterFilter(this,'open')">Open now</div>
+          <div class="filter-chip" onclick="setShelterFilter(this,'verified')">Verified</div>
+          <div class="filter-chip" onclick="setShelterFilter(this,'near')">Nearest</div>
+          <div class="filter-chip" onclick="setShelterFilter(this,'most_dogs')">Most dogs</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;padding:0 20px 16px">
+        <div class="stat-h-box"><div class="stat-h-val">6</div><div class="stat-h-label">Shelters</div></div>
+        <div class="stat-h-box"><div class="stat-h-val">183</div><div class="stat-h-label">Dogs waiting</div></div>
+        <div class="stat-h-box"><div class="stat-h-val">847</div><div class="stat-h-label">Rehomed 2024</div></div>
+        <div class="stat-h-box"><div class="stat-h-val">320</div><div class="stat-h-label">Volunteers</div></div>
+      </div>
+      <div class="shelter-list" id="shelter-list"></div>
+      <div style="height:20px"></div>
+    </div>
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="switchNav(0)"><div class="nav-icon">🐾</div><div class="nav-label">Discover</div></div>
+      <div class="nav-item active" onclick="switchNav(1)"><div class="nav-icon">🏠</div><div class="nav-label">Shelters</div></div>
+      <div class="nav-item" onclick="switchNav(2)"><div class="nav-icon">📋</div><div class="nav-label">Adopt</div></div>
+      <div class="nav-item" onclick="switchNav(3)"><div class="nav-icon">🐕</div><div class="nav-label">Foster</div></div>
+      <div class="nav-item" onclick="switchNav(4)"><div class="nav-icon">💚</div><div class="nav-label">Learn</div></div>
+      <div class="nav-item" onclick="switchNav(5)"><div class="nav-icon">👤</div><div class="nav-label">Profile</div></div>
+    </div>
+  </div>
+
+  <!-- APPLICATIONS -->
+  <div class="page" id="page-applications">
+    <div class="scroll-area">
+      <div style="padding:16px 20px 0">
+        <div class="awareness-title">My Applications 📋</div>
+        <div style="font-size:14px;color:var(--text-secondary);margin-bottom:16px" id="app-count-text">No applications yet</div>
+      </div>
+      <div id="applications-list"></div>
+      <div style="padding:0 20px 20px">
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
+          <div style="font-size:20px;margin-bottom:8px">📋</div>
+          <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px">How the process works</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">Submit application → Shelter review (48h) → Home visit scheduled → Approval &amp; paperwork → Meet &amp; greet → Adoption day 🎉</div>
+        </div>
+      </div>
+    </div>
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="switchNav(0)"><div class="nav-icon">🐾</div><div class="nav-label">Discover</div></div>
+      <div class="nav-item" onclick="switchNav(1)"><div class="nav-icon">🏠</div><div class="nav-label">Shelters</div></div>
+      <div class="nav-item active" onclick="switchNav(2)"><div class="nav-icon">📋</div><div class="nav-label">Adopt</div></div>
+      <div class="nav-item" onclick="switchNav(3)"><div class="nav-icon">🐕</div><div class="nav-label">Foster</div></div>
+      <div class="nav-item" onclick="switchNav(4)"><div class="nav-icon">💚</div><div class="nav-label">Learn</div></div>
+      <div class="nav-item" onclick="switchNav(5)"><div class="nav-icon">👤</div><div class="nav-label">Profile</div></div>
+    </div>
+  </div>
+
+  <!-- FOSTER -->
+  <div class="page" id="page-foster">
+    <div class="scroll-area">
+      <div style="padding:16px 20px 14px">
+        <div class="awareness-title">Foster a Dog 🐕</div>
+        <div class="awareness-sub">Give a dog a temporary home while they await adoption</div>
+      </div>
+      <div class="vol-hero">
+        <div style="font-size:36px;margin-bottom:10px">🏠</div>
+        <div class="vol-hero-title">Become a foster parent</div>
+        <div class="vol-hero-sub">No commitment to adopt. Just love, space, and time.</div>
+        <div class="vol-stat-row">
+          <div class="vol-stat"><div class="vol-stat-num">47</div><div class="vol-stat-label">Active fosters</div></div>
+          <div class="vol-stat"><div class="vol-stat-num">214</div><div class="vol-stat-label">Dogs fostered</div></div>
+          <div class="vol-stat"><div class="vol-stat-num">78%</div><div class="vol-stat-label">Become adopters</div></div>
+        </div>
+      </div>
+      <div style="padding:0 20px;margin-bottom:16px">
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px">
+          <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--text);margin-bottom:10px">What fostering involves</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.8">
+            <div>🏠 &nbsp;Host for 2–8 weeks on average</div>
+            <div>🍚 &nbsp;Food &amp; basic supplies provided by shelter</div>
+            <div>💊 &nbsp;All medical costs covered</div>
+            <div>📞 &nbsp;24/7 shelter support via WhatsApp</div>
+            <div>🚗 &nbsp;Free pickup &amp; drop service</div>
+          </div>
+        </div>
+      </div>
+      <div style="padding:0 20px 10px"><div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:600;color:var(--text);margin-bottom:14px">Dogs needing foster care</div></div>
+      <div style="padding:0 20px" id="foster-list"></div>
+      <div style="padding:0 20px;margin-bottom:16px">
+        <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:600;color:var(--text);margin-bottom:12px">Frequently asked</div>
+        <div id="foster-faq"></div>
+      </div>
+      <div style="padding:0 20px 8px">
+        <button class="btn-primary" onclick="showToast('Opening foster registration form… 📋')">Register as a foster parent</button>
+      </div>
+      <div style="height:20px"></div>
+    </div>
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="switchNav(0)"><div class="nav-icon">🐾</div><div class="nav-label">Discover</div></div>
+      <div class="nav-item" onclick="switchNav(1)"><div class="nav-icon">🏠</div><div class="nav-label">Shelters</div></div>
+      <div class="nav-item" onclick="switchNav(2)"><div class="nav-icon">📋</div><div class="nav-label">Adopt</div></div>
+      <div class="nav-item active" onclick="switchNav(3)"><div class="nav-icon">🐕</div><div class="nav-label">Foster</div></div>
+      <div class="nav-item" onclick="switchNav(4)"><div class="nav-icon">💚</div><div class="nav-label">Learn</div></div>
+      <div class="nav-item" onclick="switchNav(5)"><div class="nav-icon">👤</div><div class="nav-label">Profile</div></div>
+    </div>
+  </div>
+
+  <!-- LEARN -->
+  <div class="page" id="page-awareness">
+    <div class="scroll-area">
+      <div class="awareness-header">
+        <div class="awareness-title">Learn 💚</div>
+        <div class="awareness-sub">Stories, guides and tips for dog welfare</div>
+      </div>
+      <div style="margin:0 20px 16px;background:linear-gradient(135deg,#1a2a3a,#0d1a25);border:1px solid #2a3a4a;border-radius:var(--radius);padding:16px;cursor:pointer" onclick="openArticle('a6')">
+        <div style="font-size:11px;font-weight:700;color:#7db3f5;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">📌 Must read</div>
+        <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:#fff;margin-bottom:6px;line-height:1.3">India's stray dog crisis: 62 million animals</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:12px">7 min read · 631 ♥</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.6);line-height:1.5">The numbers behind the problem — and what individuals can actually do.</div>
+      </div>
+      <div style="margin:0 20px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer" onclick="showPage('page-volunteer')">
+        <div style="font-size:28px">🙋</div>
+        <div style="flex:1">
+          <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px">Volunteer with us</div>
+          <div style="font-size:12px;color:var(--text-secondary)">Weekend slots available · No experience needed</div>
+        </div>
+        <div style="color:var(--text-muted)">›</div>
+      </div>
+      <div class="awareness-filter-row" id="awareness-filters">
+        <div class="filter-chip active" onclick="setAwarenessFilter(this,'all')">All</div>
+        <div class="filter-chip" onclick="setAwarenessFilter(this,'Tips')">Tips</div>
+        <div class="filter-chip" onclick="setAwarenessFilter(this,'Health')">Health</div>
+        <div class="filter-chip" onclick="setAwarenessFilter(this,'Story')">Stories</div>
+        <div class="filter-chip" onclick="setAwarenessFilter(this,'Community')">Community</div>
+        <div class="filter-chip" onclick="setAwarenessFilter(this,'Awareness')">Awareness</div>
+        <div class="filter-chip" onclick="setAwarenessFilter(this,'Training')">Training</div>
+        <div class="filter-chip" onclick="setAwarenessFilter(this,'Nutrition')">Nutrition</div>
+      </div>
+      <div class="awareness-list" id="awareness-list"></div>
+      <div style="height:20px"></div>
+    </div>
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="switchNav(0)"><div class="nav-icon">🐾</div><div class="nav-label">Discover</div></div>
+      <div class="nav-item" onclick="switchNav(1)"><div class="nav-icon">🏠</div><div class="nav-label">Shelters</div></div>
+      <div class="nav-item" onclick="switchNav(2)"><div class="nav-icon">📋</div><div class="nav-label">Adopt</div></div>
+      <div class="nav-item" onclick="switchNav(3)"><div class="nav-icon">🐕</div><div class="nav-label">Foster</div></div>
+      <div class="nav-item active" onclick="switchNav(4)"><div class="nav-icon">💚</div><div class="nav-label">Learn</div></div>
+      <div class="nav-item" onclick="switchNav(5)"><div class="nav-icon">👤</div><div class="nav-label">Profile</div></div>
+    </div>
+  </div>
+
+  <!-- ARTICLE READER -->
+  <div class="page" id="page-article">
+    <div style="padding:14px 20px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--border)">
+      <div class="back-btn" onclick="showPage('page-awareness')">←</div>
+      <div class="page-title" id="article-page-title">Article</div>
+      <div style="margin-left:auto;font-size:18px;cursor:pointer" onclick="showToast('Article saved 🔖')">🔖</div>
+    </div>
+    <div class="scroll-area">
+      <div class="article-hero-img" id="article-hero-img" style="background:var(--surface2)">🐾</div>
+      <div style="padding:0 20px 8px;display:flex;align-items:center;gap:8px">
+        <span class="awareness-tag" id="article-tag-pill">Tips</span>
+        <span style="font-size:12px;color:var(--text-muted)" id="article-read-time">4 min read</span>
+      </div>
+      <div style="padding:0 20px 6px">
+        <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--text);line-height:1.3;margin-bottom:6px" id="article-full-title"></div>
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:4px" id="article-byline"></div>
+      </div>
+      <div class="article-content" id="article-content"></div>
+      <div style="padding:0 20px;margin-bottom:20px">
+        <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--text);margin-bottom:10px">Related articles</div>
+        <div id="related-articles"></div>
+      </div>
+      <div style="height:20px"></div>
+    </div>
+  </div>
+
+  <!-- VOLUNTEER -->
+  <div class="page" id="page-volunteer">
+    <div style="padding:14px 20px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--border)">
+      <div class="back-btn" onclick="showPage('page-awareness')">←</div>
+      <div class="page-title">Volunteer</div>
+    </div>
+    <div class="scroll-area">
+      <div style="padding:0 20px;margin-top:16px">
+        <div class="vol-hero">
+          <div style="font-size:40px;margin-bottom:10px">🙋‍♀️</div>
+          <div class="vol-hero-title">Make a difference every weekend</div>
+          <div class="vol-hero-sub">No experience needed. Just show up with heart.</div>
+          <div class="vol-stat-row">
+            <div class="vol-stat"><div class="vol-stat-num">4,290</div><div class="vol-stat-label">Volunteers 2024</div></div>
+            <div class="vol-stat"><div class="vol-stat-num">38</div><div class="vol-stat-label">Open roles</div></div>
+            <div class="vol-stat"><div class="vol-stat-num">92%</div><div class="vol-stat-label">Return rate</div></div>
+          </div>
+        </div>
+      </div>
+      <div style="padding:0 20px 8px;margin-top:16px">
+        <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:600;color:var(--text);margin-bottom:14px">Open volunteer roles</div>
+      </div>
+      <div style="padding:0 20px" id="vol-roles"></div>
+      <div style="padding:0 20px;margin-top:8px">
+        <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:600;color:var(--text);margin-bottom:14px">Upcoming events</div>
+        <div id="vol-events"></div>
+      </div>
+      <div style="margin-top:8px">
+        <div style="padding:0 20px 12px;font-family:'Syne',sans-serif;font-size:15px;font-weight:600;color:var(--text)">🏅 Top volunteers this month</div>
+        <div id="vol-leaderboard"></div>
+      </div>
+      <div style="height:20px"></div>
+    </div>
+  </div>
+
+  <!-- USER PROFILE -->
+  <div class="page" id="page-user-profile">
+    <div class="scroll-area">
+      <div class="user-profile-page">
+        <div class="user-avatar-large" id="big-avatar">AD</div>
+        <div class="user-name-large" id="big-name">Adithya Kumar</div>
+        <div class="user-email" id="big-email">adithya@email.com</div>
+        <div class="user-location" id="big-location">📍 Chennai, Tamil Nadu</div>
+        <div class="user-stats-row">
+          <div class="stat-box"><div class="stat-val" id="stat-apps">0</div><div class="stat-label">Applications</div></div>
+          <div class="stat-box"><div class="stat-val" id="stat-favs">0</div><div class="stat-label">Saved dogs</div></div>
+          <div class="stat-box"><div class="stat-val">2</div><div class="stat-label">Articles read</div></div>
+          <div class="stat-box"><div class="stat-val">0</div><div class="stat-label">Vol. hrs</div></div>
+        </div>
+        <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--text);margin-bottom:10px">Your badges</div>
+        <div class="badge-row">
+          <div class="badge-pill earned">🐾 Paw Pioneer</div>
+          <div class="badge-pill earned">❤️ Animal Lover</div>
+          <div class="badge-pill">🏅 Super Adopter</div>
+          <div class="badge-pill">🌟 Top Volunteer</div>
+          <div class="badge-pill earned">📰 Reader</div>
+        </div>
+        <div style="background:linear-gradient(135deg,#1a2a3a,#1a3a1a);border:1px solid #2a4a2a;border-radius:var(--radius-sm);padding:14px;margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:var(--text)">🌟 PawPoints</div>
+            <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--accent-light)">240 pts</div>
+          </div>
+          <div style="height:6px;background:var(--surface3);border-radius:100px;overflow:hidden;margin-bottom:6px">
+            <div style="width:48%;height:100%;background:var(--accent);border-radius:100px"></div>
+          </div>
+          <div style="font-size:11px;color:var(--text-muted)">260 more points to unlock 🏅 Super Adopter badge</div>
+        </div>
+        <div class="profile-menu-item" onclick="switchNav(2)"><div class="menu-icon" style="background:#2a3a5c">📋</div><div><div class="menu-text">My Applications</div><div class="menu-sub" id="app-count-menu">0 active</div></div><div class="menu-arrow">›</div></div>
+        <div class="profile-menu-item" onclick="showFavourites()"><div class="menu-icon" style="background:#3a1a1a">❤️</div><div><div class="menu-text">Saved Dogs</div><div class="menu-sub" id="fav-count-menu">0 saved</div></div><div class="menu-arrow">›</div></div>
+        <div class="profile-menu-item" onclick="showPage('page-volunteer')"><div class="menu-icon" style="background:#1a2a3a">🙋</div><div><div class="menu-text">Volunteer</div><div class="menu-sub">Upcoming sessions</div></div><div class="menu-arrow">›</div></div>
+        <div class="profile-menu-item" onclick="switchNav(3)"><div class="menu-icon" style="background:#2a1a40">🐕</div><div><div class="menu-text">Foster Dogs</div><div class="menu-sub">No active fosters</div></div><div class="menu-arrow">›</div></div>
+        <div class="profile-menu-item" onclick="showPage('page-notifications')"><div class="menu-icon" style="background:#2a2a10">🔔</div><div><div class="menu-text">Notifications</div><div class="menu-sub" id="notif-count-menu">0 unread</div></div><div class="menu-arrow">›</div></div>
+        <div class="profile-menu-item" onclick="showEditProfile()"><div class="menu-icon" style="background:#1a2a3a">✏️</div><div><div class="menu-text">Edit Profile</div><div class="menu-sub">Name, phone, city</div></div><div class="menu-arrow">›</div></div>
+        <div class="profile-menu-item" onclick="showToast('Referral link copied! 🐾')"><div class="menu-icon" style="background:#1a2a2a">🔗</div><div><div class="menu-text">Refer a friend</div><div class="menu-sub">Invite friends to adopt</div></div><div class="menu-arrow">›</div></div>
+        <div class="profile-menu-item" onclick="showToast('Opening help centre…')"><div class="menu-icon" style="background:#2a2a2a">❓</div><div><div class="menu-text">Help &amp; FAQs</div><div class="menu-sub">How adoption works</div></div><div class="menu-arrow">›</div></div>
+        <div class="profile-menu-item" onclick="API.auth.logout()" style="margin-top:8px"><div class="menu-icon" style="background:#2a1a1a">🚪</div><div><div class="menu-text" style="color:var(--red)">Sign Out</div></div></div>
+        <div style="height:20px"></div>
+      </div>
+    </div>
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="switchNav(0)"><div class="nav-icon">🐾</div><div class="nav-label">Discover</div></div>
+      <div class="nav-item" onclick="switchNav(1)"><div class="nav-icon">🏠</div><div class="nav-label">Shelters</div></div>
+      <div class="nav-item" onclick="switchNav(2)"><div class="nav-icon">📋</div><div class="nav-label">Adopt</div></div>
+      <div class="nav-item" onclick="switchNav(3)"><div class="nav-icon">🐕</div><div class="nav-label">Foster</div></div>
+      <div class="nav-item" onclick="switchNav(4)"><div class="nav-icon">💚</div><div class="nav-label">Learn</div></div>
+      <div class="nav-item active" onclick="switchNav(5)"><div class="nav-icon">👤</div><div class="nav-label">Profile</div></div>
+    </div>
+  </div>
+
+  <!-- NOTIFICATIONS -->
+  <div class="page" id="page-notifications">
+    <div style="padding:14px 20px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--border)">
+      <div class="back-btn" onclick="goBack()">←</div>
+      <div class="page-title">Notifications</div>
+      <div style="margin-left:auto;font-size:13px;color:#7db3f5;cursor:pointer" onclick="markAllRead()">Mark all read</div>
+    </div>
+    <div class="scroll-area" id="notif-list"></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- DOG MODAL -->
+  <div class="modal-overlay" id="dog-modal" onclick="if(event.target===this)closeModal('dog-modal')">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div style="font-size:52px;text-align:center;margin-bottom:12px" id="modal-emoji">🐕</div>
+      <div class="modal-title" id="modal-name"></div>
+      <div style="font-size:14px;color:var(--text-secondary);margin-bottom:8px" id="modal-sub"></div>
+      <div style="margin-bottom:12px" id="modal-tag"></div>
+      <div class="about-text" id="modal-about"></div>
+      <div class="stats-row" style="margin-top:8px" id="modal-stats"></div>
+      <div style="display:flex;gap:10px;margin-top:12px">
+        <button class="modal-close-btn" style="flex:1;margin-top:0" onclick="toggleModalFav()">🤍 Save</button>
+        <button class="continue-btn" style="flex:2;margin-top:0" onclick="closeModal('dog-modal');openDogProfile(currentDogId)">View Profile</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT PROFILE MODAL -->
+  <div class="modal-overlay" id="edit-modal" onclick="if(event.target===this)closeModal('edit-modal')">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Edit Profile</div>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-top:4px">
+        <div><div class="field-label">Full Name</div><input class="input-field" id="edit-name" placeholder="Full Name"></div>
+        <div><div class="field-label">Phone</div><input class="input-field" id="edit-phone" placeholder="+91 9XXXXXXXXX" type="tel"></div>
+        <div><div class="field-label">City</div><input class="input-field" id="edit-city" placeholder="Chennai"></div>
+        <button class="continue-btn" onclick="API.user.updateProfile()" style="margin-top:4px">Save Changes</button>
+      </div>
+      <button class="modal-close-btn" onclick="closeModal('edit-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── DB ───────────────────────────────────────────────────────────────────────
+const DB={_store:{},_load(){try{const s=sessionStorage.getItem('pf5');if(s)this._store=JSON.parse(s);}catch(e){}},_save(){try{sessionStorage.setItem('pf5',JSON.stringify(this._store));}catch(e){}},get(k){return this._store[k]??null;},set(k,v){this._store[k]=v;this._save();return v;},push(k,item){if(!Array.isArray(this._store[k]))this._store[k]=[];this._store[k].push(item);this._save();return item;},update(k,id,patch){const a=this._store[k];if(!Array.isArray(a))return null;const i=a.findIndex(x=>x.id===id);if(i===-1)return null;a[i]={...a[i],...patch};this._save();return a[i];},find(k,fn){return(this._store[k]||[]).find(fn)||null;},filter(k,fn){const a=this._store[k]||[];return fn?a.filter(fn):a;}};
+
+// ─── SEED DATA ────────────────────────────────────────────────────────────────
+const SEED={
+dogs:[
+  {id:'dog-1',name:'Bruno',breed:'Labrador mix',age:'2 yrs',ageGroup:'adult',gender:'Male',weight:'18 kg',size:'Medium',location:'Chennai',distance:'2.3km',shelter:'shelter-1',emoji:'🐕',tags:['Vaccinated','Neutered','Child-friendly','Good with cats'],goodwith:'Kids · Cats · Dogs',energy:'High 🏃',exercise:'2 walks/day · loves fetch',grooming:'Low maintenance, weekly brush',space:'House or large apartment',diet:'Dry kibble · 2× daily · 300g',traits:['Friendly','Energetic','Loyal','Playful','House-trained'],health:[{label:'Vaccinated',status:'hs-good',value:'Jan 2025'},{label:'Neutered',status:'hs-good',value:'Yes'},{label:'Microchipped',status:'hs-good',value:'Yes'},{label:'Dewormed',status:'hs-good',value:'Mar 2025'},{label:'Dental check',status:'hs-due',value:'Due Apr 2025'}],about:'Bruno is a friendly and energetic dog rescued from the streets of Chennai. He loves outdoor walks and responds well to basic commands. Great with children and other pets — he has never shown aggression. Bruno is house-trained and will quickly adapt to your routine.',reviews:[{stars:5,text:'Bruno settled in within 3 days. Best decision we ever made!',author:'Priya S., adopted Jan 2024'},{stars:5,text:'So well-behaved and loving.',author:'Rahul K., adopted Nov 2023'}]},
+  {id:'dog-2',name:'Bella',breed:'Indie',age:'1 yr',ageGroup:'puppy',gender:'Female',weight:'6 kg',size:'Small',location:'Velachery',distance:'2.3km',shelter:'shelter-2',emoji:'🐕‍🦺',tags:['Vaccinated','Child-friendly'],goodwith:'Kids · Older dogs',energy:'High 🏃',exercise:'2 walks/day · very playful',grooming:'Easy — short coat',space:'Apartment-friendly',diet:'Puppy kibble · 3× daily · 150g',traits:['Curious','Playful','Affectionate','Bold','Quick learner'],health:[{label:'Vaccinated',status:'hs-good',value:'2nd dose done'},{label:'Dewormed',status:'hs-good',value:'Monthly'},{label:'Microchipped',status:'hs-good',value:'Yes'}],about:'Bella is a spirited young Indie rescued near Velachery bus depot. She is curious, house-trained, and loves fetch. Ideal for a family with older kids who can match her energy.',reviews:[{stars:4,text:'Bella is a delight — naughty but sweet!',author:'Deepa R., adopted Feb 2024'}]},
+  {id:'dog-3',name:'Max',breed:'Spitz',age:'3 yrs',ageGroup:'adult',gender:'Male',weight:'8 kg',size:'Small',location:'Anna Nagar',distance:'4.1km',shelter:'shelter-2',emoji:'🐩',tags:['Neutered','Good with cats'],goodwith:'Cats · Quiet households',energy:'Low 😌',exercise:'1 short walk/day',grooming:'Daily brushing (fluffy coat)',space:'Perfect for apartments',diet:'Small breed dry food · 2× daily',traits:['Calm','Gentle','Quiet','Affectionate','Cat-friendly'],health:[{label:'Neutered',status:'hs-good',value:'Yes'},{label:'Vaccinated',status:'hs-good',value:'Jan 2025'}],about:'Max is a calm and gentle Spitz perfectly suited to apartment living. He rarely barks, enjoys lap time, and gets along beautifully with cats.',reviews:[]},
+  {id:'dog-4',name:'Rocky',breed:'GSD mix',age:'4 yrs',ageGroup:'adult',gender:'Male',weight:'22 kg',size:'Large',location:'Tambaram',distance:'5km',shelter:'shelter-3',emoji:'🦮',tags:['Child-friendly','Trained'],goodwith:'Kids · Experienced owners',energy:'Very high 🔥',exercise:'1+ hr outdoor activity daily',grooming:'Regular brushing',space:'House with yard preferred',diet:'Large breed kibble · 2× daily · 450g',traits:['Protective','Loyal','Confident','Trainable','Athletic'],health:[{label:'Vaccinated',status:'hs-good',value:'Jan 2025'},{label:'Neutered',status:'hs-good',value:'Yes'}],about:'Rocky is a confident GSD mix who has undergone basic obedience training. He responds to sit, stay, and come. Best suited for a house with a yard.',reviews:[{stars:5,text:'Rocky is incredibly loyal and protective.',author:'Suresh P., adopted Dec 2023'}]},
+  {id:'dog-5',name:'Daisy',breed:'Beagle mix',age:'6 months',ageGroup:'puppy',gender:'Female',weight:'4 kg',size:'Small',location:'Adyar',distance:'3.2km',shelter:'shelter-1',emoji:'🐶',tags:['Vaccinated','Child-friendly','Playful'],goodwith:'Kids · Everyone',energy:'High 🏃',exercise:'Playtime + 1 walk/day',grooming:'Low maintenance',space:'Any home — very adaptable',diet:'Puppy kibble · 3× daily',traits:['Adventurous','Sweet','Playful','Curious','Cuddly'],health:[{label:'Vaccinated',status:'hs-due',value:'2nd dose pending'},{label:'Dewormed',status:'hs-good',value:'Monthly'}],about:'Tiny Daisy was found near Adyar beach. She is playful, curious, and loves fetch. Ideal for families with children.',reviews:[]},
+  {id:'dog-6',name:'Charlie',breed:'Indie',age:'7 yrs',ageGroup:'senior',gender:'Male',weight:'14 kg',size:'Medium',location:'Mylapore',distance:'6km',shelter:'shelter-3',emoji:'🐕',tags:['Neutered','Good with cats','Calm'],goodwith:'Cats · Seniors · Quiet households',energy:'Low 😌',exercise:'1 gentle walk/day',grooming:'Minimal',space:'Any — very laid-back',diet:'Senior formula kibble · 2× daily',traits:['Peaceful','Wise','Gentle','Undemanding','Soulful'],health:[{label:'Neutered',status:'hs-good',value:'Yes'},{label:'Vaccinated',status:'hs-good',value:'Jan 2025'}],about:'Charlie is a gentle senior dog. He prefers quiet evenings and lazy Sunday mornings — and will reward you with unconditional love. Charlie has been waiting 4 months.',reviews:[{stars:5,text:'Charlie is the most gentle, soulful dog.',author:'Anitha M., adopted Mar 2024'}]},
+  {id:'dog-7',name:'Milo',breed:'Dachshund mix',age:'2 yrs',ageGroup:'adult',gender:'Male',weight:'5 kg',size:'Small',location:'T. Nagar',distance:'3.8km',shelter:'shelter-4',emoji:'🐾',tags:['Vaccinated','Good with cats'],goodwith:'Cats · Small dogs',energy:'Moderate 🚶',exercise:'1 walk/day + indoor play',grooming:'Weekly brush',space:'Ideal for apartments',diet:'Small breed kibble · 2× daily',traits:['Charming','Stubborn-but-lovable','Lap dog','Sunny','Nosy'],health:[{label:'Vaccinated',status:'hs-good',value:'Feb 2025'},{label:'Microchipped',status:'hs-good',value:'Yes'}],about:'Milo is a charming Dachshund mix with a big personality in a small body. He loves sunbathing and lap time.',reviews:[]},
+  {id:'dog-8',name:'Lily',breed:'Indie',age:'4 months',ageGroup:'puppy',gender:'Female',weight:'2.5 kg',size:'Small',location:'Kodambakkam',distance:'4.5km',shelter:'shelter-2',emoji:'🐶',tags:['Vaccinated','Playful','Child-friendly'],goodwith:'Kids · Other puppies',energy:'Very high 🔥',exercise:'Lots of supervised play',grooming:'Easy',space:'Any — very adaptable',diet:'Puppy milk & kibble transition',traits:['Bold','Energetic','Social','Fearless','Sweet'],health:[{label:'Vaccinated',status:'hs-due',value:'1st dose done'},{label:'Dewormed',status:'hs-good',value:'Monthly'}],about:'Lily is one of four puppies rescued from a construction site. She is the boldest of the litter — always the first to explore.',reviews:[]},
+  {id:'dog-9',name:'Shadow',breed:'Rajapalayam mix',age:'5 yrs',ageGroup:'adult',gender:'Male',weight:'20 kg',size:'Large',location:'Perambur',distance:'7km',shelter:'shelter-3',emoji:'🦮',tags:['Trained','Neutered'],goodwith:'Adults · Experienced owners',energy:'High 🏃',exercise:'Long walks or runs daily',grooming:'Low — short coat',space:'House or large apartment',diet:'Large breed kibble · 2× daily · 400g',traits:['Majestic','Loyal','Alert','Reserved','Bonding'],health:[{label:'Neutered',status:'hs-good',value:'Yes'},{label:'Vaccinated',status:'hs-good',value:'Jan 2025'}],about:'Shadow is a majestic Rajapalayam mix with a sleek white coat. He is loyal, alert, and has completed basic obedience training.',reviews:[]},
+  {id:'dog-10',name:'Coco',breed:'Cocker Spaniel mix',age:'1.5 yrs',ageGroup:'adult',gender:'Female',weight:'9 kg',size:'Small',location:'Nungambakkam',distance:'5.2km',shelter:'shelter-1',emoji:'🐩',tags:['Vaccinated','Child-friendly','Good with cats'],goodwith:'Kids · Cats · Everyone',energy:'Moderate 🚶',exercise:'1–2 walks/day',grooming:'Regular grooming (wavy coat)',space:'Any home',diet:'Small breed kibble · 2× daily',traits:['Expressive','House-trained','Sociable','Gentle','Leash-trained'],health:[{label:'Vaccinated',status:'hs-good',value:'Jan 2025'},{label:'Spayed',status:'hs-good',value:'Yes'}],about:"Coco has the most expressive eyes. She was surrendered when her family relocated abroad. Already house-trained, leash-trained, and knows basic commands.",reviews:[{stars:5,text:'House-trained from day one.',author:'Kavitha L., adopted Jan 2024'}]},
+  {id:'dog-11',name:'Tiger',breed:'Indie',age:'9 yrs',ageGroup:'senior',gender:'Male',weight:'16 kg',size:'Medium',location:'Saidapet',distance:'4km',shelter:'shelter-3',emoji:'🐕',tags:['Neutered','Calm','Good with cats'],goodwith:'Cats · Seniors · Quiet homes',energy:'Low 😌',exercise:'Short walks, loves naps',grooming:'Minimal',space:'Any calm home',diet:'Senior kibble · 2× daily · small portions',traits:['Peaceful','Patient','Undemanding','Dignified','Loving'],health:[{label:'Neutered',status:'hs-good',value:'Yes'},{label:'Vaccinated',status:'hs-good',value:'Jan 2025'}],about:'Tiger has lived near a chai stall in Saidapet before coming into shelter care. He asks for very little — just a warm corner and gentle company. Tiger has been waiting 7 months.',reviews:[]},
+  {id:'dog-12',name:'Peanut',breed:'Pomeranian mix',age:'3 months',ageGroup:'puppy',gender:'Female',weight:'1.2 kg',size:'Small',location:'Guindy',distance:'6km',shelter:'shelter-4',emoji:'🐶',tags:['Vaccinated','Playful'],goodwith:'Gentle children · Adults',energy:'Very high 🔥',exercise:'Short supervised play bursts',grooming:'Daily brushing (fluffy)',space:'Any home — tiny!',diet:'Puppy wet + dry food mix',traits:['Tiny','Fearless','Fluffy','Mischievous','Curious'],health:[{label:'Vaccinated',status:'hs-due',value:'1st dose done'}],about:'Peanut is tiny, fluffy, and absolutely fearless. Found near Guindy National Park. Worth every bit of effort!',reviews:[]},
+  {id:'dog-13',name:'Luna',breed:'Indie',age:'2 yrs',ageGroup:'adult',gender:'Female',weight:'11 kg',size:'Medium',location:'Besant Nagar',distance:'3km',shelter:'shelter-1',emoji:'🐕‍🦺',tags:['Vaccinated','Neutered','Child-friendly'],goodwith:'Kids · Everyone',energy:'Moderate 🚶',exercise:'2 walks/day',grooming:'Easy — short coat',space:'Apartment-friendly',diet:'Regular kibble · 2× daily · 220g',traits:['Sweet','Beach-loving','Gentle','Sociable','Calm'],health:[{label:'Vaccinated',status:'hs-good',value:'Jan 2025'},{label:'Spayed',status:'hs-good',value:'Yes'}],about:'Luna was rescued from Besant Nagar beach during the monsoon season. Sweet-natured, gentle, and adores humans.',reviews:[{stars:4,text:'Luna settled in beautifully. She loves beach walks!',author:'Nisha T., adopted Apr 2024'}]},
+  {id:'dog-14',name:'Buddy',breed:'Golden mix',age:'1 yr',ageGroup:'puppy',gender:'Male',weight:'12 kg',size:'Medium',location:'Thiruvanmiyur',distance:'5.5km',shelter:'shelter-5',emoji:'🐕',tags:['Vaccinated','Child-friendly','Trained'],goodwith:'Kids · Everyone',energy:'High 🏃',exercise:'2 walks/day + fetch',grooming:'Regular brushing (wavy)',space:'House or large apartment',diet:'Regular kibble · 2× daily · 250g',traits:['Golden-hearted','Cuddly','Obedient','Joyful','Retriever-instinct'],health:[{label:'Vaccinated',status:'hs-good',value:'Jan 2025'},{label:'Microchipped',status:'hs-good',value:'Yes'}],about:'Buddy is a Golden mix found near ECR. He already knows sit, stay, paw, and come. He loves retrieving anything — toys, shoes, remote controls.',reviews:[]},
+  {id:'dog-15',name:'Kiki',breed:'Indie',age:'8 months',ageGroup:'puppy',gender:'Female',weight:'5 kg',size:'Small',location:'Royapettah',distance:'3.5km',shelter:'shelter-5',emoji:'🐶',tags:['Vaccinated','Playful','Child-friendly'],goodwith:'Kids · Puppies · Everyone',energy:'Very high 🔥',exercise:'3× play sessions daily',grooming:'Easy',space:'Any home',diet:'Puppy kibble · 3× daily',traits:['Zany','Expressive','Bouncy','Loving','Fast learner'],health:[{label:'Vaccinated',status:'hs-good',value:'2nd dose done'},{label:'Microchipped',status:'hs-good',value:'Yes'}],about:'Kiki is a ball of joy rescued from Royapettah. She will have your whole family laughing within hours of arrival.',reviews:[]},
+  {id:'dog-16',name:'Simba',breed:'Indie',age:'8 yrs',ageGroup:'senior',gender:'Male',weight:'13 kg',size:'Medium',location:'Chromepet',distance:'10km',shelter:'shelter-3',emoji:'🐕',tags:['Neutered','Calm','Good with cats'],goodwith:'Cats · Seniors · Quiet families',energy:'Low 😌',exercise:'1 slow daily walk',grooming:'Minimal',space:'Any quiet home',diet:'Senior kibble · 2× daily',traits:['Dignified','Grey-muzzled','Patient','Soulful','Deserving'],health:[{label:'Neutered',status:'hs-good',value:'Yes'},{label:'Vaccinated',status:'hs-good',value:'Jan 2025'}],about:'Simba is a dignified senior dog with soulful eyes. He has been at SPCA for 8 months and deserves a peaceful retirement.',reviews:[]},
+  {id:'dog-17',name:'Storm',breed:'GSD mix',age:'2 yrs',ageGroup:'adult',gender:'Male',weight:'20 kg',size:'Large',location:'Poonamallee',distance:'12km',shelter:'shelter-6',emoji:'🦮',tags:['Trained','Vaccinated'],goodwith:'Adults · Experienced owners',energy:'Very high 🔥',exercise:'90+ min activity daily',grooming:'Regular brushing',space:'House with yard strongly preferred',diet:'Active breed kibble · 2× daily · 450g',traits:['Intense','Athletic','Bonding','Protective','Smart'],health:[{label:'Vaccinated',status:'hs-good',value:'Jan 2025'},{label:'Neutered',status:'hs-good',value:'Yes'}],about:"Storm is a powerful and intelligent GSD mix. He has completed obedience training and passed a comprehensive behaviour evaluation.",reviews:[]},
+  {id:'dog-18',name:'Ranger',breed:'Indie',age:'6 yrs',ageGroup:'adult',gender:'Male',weight:'19 kg',size:'Large',location:'Ambattur',distance:'11km',shelter:'shelter-6',emoji:'🦮',tags:['Neutered','Trained','Child-friendly'],goodwith:'Active families · Kids',energy:'High 🏃',exercise:'2 long walks/day',grooming:'Easy — short coat',space:'House preferred',diet:'Large breed kibble · 2× daily · 400g',traits:['Dependable','Watchful','Friendly','Active','Loyal'],health:[{label:'Neutered',status:'hs-good',value:'Yes'},{label:'Vaccinated',status:'hs-good',value:'Jan 2025'}],about:'Ranger is a dependable Indie rehabilitated by shelter volunteers. Good with children and other dogs.',reviews:[]},
+  {id:'dog-19',name:'Biscuit',breed:'Indie mix',age:'5 months',ageGroup:'puppy',gender:'Male',weight:'3 kg',size:'Small',location:'Teynampet',distance:'2.8km',shelter:'shelter-1',emoji:'🐶',tags:['Vaccinated','Playful'],goodwith:'Kids · Puppies',energy:'Very high 🔥',exercise:'4–5 play sessions daily',grooming:'Easy',space:'Any home',diet:'Puppy kibble · 4× daily · 80g',traits:['Cookie-colored','Tiny','Brave','Fast learner','Cuddly'],health:[{label:'Vaccinated',status:'hs-due',value:'2nd dose due'},{label:'Dewormed',status:'hs-good',value:'Apr 2025'}],about:"Biscuit was found in a bag near Teynampet police station. He has a biscuit-coloured coat and eyes full of wonder.",reviews:[]},
+  {id:'dog-20',name:'Apollo',breed:'Indie',age:'3 yrs',ageGroup:'adult',gender:'Male',weight:'16 kg',size:'Medium',location:'Kotturpuram',distance:'4km',shelter:'shelter-1',emoji:'🐕',tags:['Vaccinated','Neutered','Trained'],goodwith:'Adults · Older kids',energy:'Moderate 🚶',exercise:'2 walks/day',grooming:'Easy',space:'Apartment or house',diet:'Regular kibble · 2× daily · 300g',traits:['Regal','Calm','Well-mannered','Leash-trained','Perceptive'],health:[{label:'Vaccinated',status:'hs-good',value:'Jan 2025'},{label:'Neutered',status:'hs-good',value:'Yes'}],about:'Apollo carries himself with quiet confidence. Surrendered when his owner relocated. Already house-trained and leash-trained.',reviews:[]},
+  {id:'dog-21',name:'Honey',breed:'Labrador',age:'4 yrs',ageGroup:'adult',gender:'Female',weight:'21 kg',size:'Large',location:'Pallavaram',distance:'7.5km',shelter:'shelter-3',emoji:'🐕‍🦺',tags:['Vaccinated','Neutered','Child-friendly'],goodwith:'Kids · Everyone · Other dogs',energy:'High 🏃',exercise:'2–3 walks/day',grooming:'Weekly brushing',space:'House or large apartment',diet:'Large breed kibble · 2× daily · 420g',traits:['Honey-natured','Retriever','Gentle giant','Social','Mouthy-playful'],health:[{label:'Vaccinated',status:'hs-good',value:'Jan 2025'},{label:'Spayed',status:'hs-good',value:'Yes'}],about:"Honey is sweet, warm, and irresistible. A pure Labrador surrendered after her owner's health declined. Loves water and retrieving.",reviews:[]},
+  {id:'dog-22',name:'Oreo',breed:'Dalmatian mix',age:'1.5 yrs',ageGroup:'adult',gender:'Male',weight:'15 kg',size:'Medium',location:'OMR',distance:'9km',shelter:'shelter-2',emoji:'🐕',tags:['Vaccinated','Playful','Child-friendly'],goodwith:'Kids · Active families',energy:'High 🏃',exercise:'2 long walks/day',grooming:'Easy — short spotted coat',space:'Any home with space',diet:'Regular kibble · 2× daily · 280g',traits:['Spotty','Energetic','Social','Car-ride-lover','Water-fan'],health:[{label:'Vaccinated',status:'hs-good',value:'Feb 2025'},{label:'Neutered',status:'hs-good',value:'Yes'}],about:'Oreo arrived with a spotted coat and endless energy. Loves car rides, playing with water, and meeting new people.',reviews:[]},
+  {id:'dog-23',name:'Biscuit',breed:'Indie mix',age:'5 months',ageGroup:'puppy',gender:'Male',weight:'3 kg',size:'Small',location:'Teynampet',distance:'2.8km',shelter:'shelter-1',emoji:'🐶',tags:['Vaccinated','Playful'],goodwith:'Kids · Puppies',energy:'Very high 🔥',exercise:'Play sessions daily',grooming:'Easy',space:'Any home',diet:'Puppy kibble · 4× daily',traits:['Playful','Tiny','Brave','Curious','Cuddly'],health:[{label:'Vaccinated',status:'hs-due',value:'2nd dose due'}],about:'A sweet new addition to the shelter. Needs a patient, loving home.',reviews:[]},
+],
+shelters:[
+  {id:'shelter-1',name:'Blue Cross of India',location:'Velachery, Chennai',distance:'2.3km',open:true,hours:'9 AM – 5 PM',rating:4.8,dogCount:48,verified:true,emoji:'🏥',color:'var(--accent-dim)',tags:['24h Emergency','Sterilisation','Adoption','Foster'],about:"India's oldest and largest animal welfare NGO. Operating since 1959, helping over 100,000 animals.",weeklyAdoptions:8,volunteers:120,reviews:[{stars:5,text:'Incredibly professional. The staff genuinely care.',author:'Priya S.'},{stars:5,text:'Post-adoption support was excellent.',author:'Rahul K.'}]},
+  {id:'shelter-2',name:'CARE Animal Shelter',location:'Anna Nagar, Chennai',distance:'6.1km',open:false,hours:'10 AM – 4 PM',rating:4.5,dogCount:22,verified:true,emoji:'🐾',color:'#2a1a3a',tags:['Adoption','Vaccination','Foster','Training'],about:'A community-run shelter focused on rescue and rehabilitation. Specialises in puppy care.',weeklyAdoptions:4,volunteers:45,reviews:[{stars:4,text:'Friendly staff, great follow-up.',author:'Deepa R.'}]},
+  {id:'shelter-3',name:'SPCA Chennai',location:'Saidapet, Chennai',distance:'8km',open:true,hours:'9 AM – 6 PM',rating:4.6,dogCount:31,verified:false,emoji:'🐶',color:'#1a2a3a',tags:['Rescue','Medical','Adoption','Sterilisation'],about:'Focused on anti-cruelty enforcement, rescue, and medical care for injured strays.',weeklyAdoptions:5,volunteers:80,reviews:[{stars:5,text:'Rocky is the perfect family dog. Thank you SPCA!',author:'Suresh P.'}]},
+  {id:'shelter-4',name:'Precious Paws Foundation',location:'Tambaram, Chennai',distance:'12km',open:true,hours:'8 AM – 5 PM',rating:4.9,dogCount:14,verified:true,emoji:'❤️',color:'#2a1a1a',tags:['Small breeds','Senior dogs','Foster','Palliative care'],about:'Boutique shelter specialising in senior and small-breed dogs.',weeklyAdoptions:3,volunteers:30,reviews:[{stars:5,text:'Every dog is treated like royalty.',author:'Anitha M.'}]},
+  {id:'shelter-5',name:'Friendicoes SECA Chennai',location:'Royapettah, Chennai',distance:'3.8km',open:true,hours:'10 AM – 5 PM',rating:4.4,dogCount:19,verified:true,emoji:'🐕',color:'#1a2a1a',tags:['Adoption','Community ABC','Training','Education'],about:'Focuses on community education, ethical adoption, and ABC programmes.',weeklyAdoptions:3,volunteers:25,reviews:[{stars:4,text:'Great education sessions for new adopters.',author:'Ramya S.'}]},
+  {id:'shelter-6',name:'Animal Aid Foundation',location:'Ambattur, Chennai',distance:'18km',open:false,hours:'9 AM – 4 PM',rating:4.2,dogCount:29,verified:false,emoji:'🌿',color:'#1a2a3a',tags:['Large breeds','Rescue','Medical','Rural dogs'],about:'Focuses on rescuing dogs from industrial areas. Specialises in rehabilitation of traumatised dogs.',weeklyAdoptions:2,volunteers:18,reviews:[{stars:4,text:'True professionals.',author:'Sanjay T.'}]},
+],
+articles:[
+  {id:'a1',title:'Preparing your home for a rescue dog',sub:'First steps every new adopter should take.',emoji:'🌿',bg:'#1a2a1a',tagText:'Tips',tagClass:'tag-green',readTime:'5 min read',byline:'By the PawFinder team',likes:243,content:`<h2>Before your dog arrives</h2><p>The first 72 hours in a new home can be overwhelming for a rescue dog. Set up a quiet, safe corner as their "home base" with bed, water bowl, and a couple of toys.</p><h2>Dog-proofing your space</h2><ul><li>Secure electrical cables and chargers</li><li>Move cleaning products out of reach</li><li>Ensure balcony railings have no gaps</li><li>Remove toxic houseplants (pothos, peace lily, sago palm)</li></ul><h2>The first night</h2><p>Expect some whimpering. Stay calm, speak softly, and let the dog come to you. Don't invite many guests. Do not scold accidents — praise correct behaviour enthusiastically.</p><h2>Your first vet visit</h2><p>Schedule a check-up within the first week. Bring the vaccination card from the shelter. Ask about deworming schedule and any boosters needed.</p>`},
+  {id:'a2',title:"Bruno's journey: from streets to a forever home",sub:'How Blue Cross of India rescued and rehabilitated over 200 dogs last year.',emoji:'🐾',bg:'#1a1a2a',tagText:'Story',tagClass:'tag-blue',readTime:'6 min read',byline:'By Priya Menon, Blue Cross volunteer',likes:512,content:`<h2>Found on a rainy night</h2><p>Bruno was spotted near Kotturpuram during a heavy downpour in March 2023. He was limping, malnourished, and had a deep wound on his shoulder. The rescue team brought him to the Velachery shelter.</p><h2>The six-week recovery</h2><p>Bruno received wound care, two surgeries, a full vaccination course, and nutritional rehabilitation. "His tail was the first thing that came back," recalls Kavitha, a regular volunteer.</p><h2>What makes Blue Cross different</h2><p>In 2023, they rescued 247 dogs, performed 312 sterilisation surgeries, and rehomed 89 dogs. Every dog is assessed for temperament before being listed for adoption.</p>`},
+  {id:'a3',title:'Vaccination schedule for adult rescue dogs',sub:'A vet-approved guide for keeping your adopted dog protected.',emoji:'🏥',bg:'#2a1a10',tagText:'Health',tagClass:'tag-orange',readTime:'4 min read',byline:'Dr. Ramesh Subramaniam, DVM',likes:189,content:`<h2>Core vaccines every dog needs</h2><ul><li><strong>DHPPiL (5-in-1):</strong> Distemper, Hepatitis, Parvovirus, Parainfluenza, and Leptospirosis. Annual boosters.</li><li><strong>Rabies:</strong> Mandatory in India. Annual booster.</li><li><strong>Bordetella:</strong> Important if your dog meets other dogs. Annual booster.</li></ul><h2>Deworming schedule</h2><p>Monthly for the first 3 months, then once every 3 months lifelong. Use vet-prescribed dewormers only.</p><h2>Tick and flea prevention</h2><p>Chennai's climate is ideal for ticks year-round. Ask your vet about monthly spot-on treatments. Check ears, paws, and underbelly after every outdoor walk.</p>`},
+  {id:'a4',title:'Understanding dog body language',sub:"Reading your dog's signals builds trust.",emoji:'🐾',bg:'#1a1a1a',tagText:'Tips',tagClass:'tag-green',readTime:'5 min read',byline:'By the PawFinder team',likes:374,content:`<h2>Signs of a relaxed dog</h2><ul><li>Loose, wiggly body — not stiff</li><li>Soft, slightly squinted eyes</li><li>Mouth open, tongue relaxed</li><li>Tail wagging at mid-height in wide arc</li></ul><h2>Signs of stress</h2><ul><li>Yawning when not tired — a calming signal</li><li>Lip licking without food present</li><li>Ears pinned flat against the head</li><li>Tail tucked under the body</li></ul><h2>Growling is communication</h2><p>Never punish a dog for growling. A growl is a warning. Punishing it teaches the dog to skip that step — making future bites more sudden and severe.</p>`},
+  {id:'a5',title:"India's stray dog crisis",sub:'Over 62 million stray dogs live in India. Here is what the data says.',emoji:'📊',bg:'#2a1a2a',tagText:'Awareness',tagClass:'tag-purple',readTime:'7 min read',byline:'Compiled from WHO and AWF India reports',likes:631,content:`<h2>The scale of the problem</h2><p>India has the world's largest stray dog population — an estimated 62 million animals. Tamil Nadu alone has approximately 3.8 million. Chennai has around 400,000 stray dogs.</p><h2>Why sterilisation works</h2><p>Culling programmes have repeatedly failed — removed dogs are quickly replaced. The Animal Birth Control (ABC) programme can reduce a local stray population by 30–40% within five years.</p><h2>What you can do</h2><ul><li>Support local ABC programmes from ₹800 per dog</li><li>Report injured strays to your local SPCA</li><li>Never abandon a pet — rehome responsibly</li><li>Adopt from shelters instead of buying</li></ul>`},
+  {id:'a6',title:'Positive reinforcement training',sub:'How to train your dog without punishment — and why it works better.',emoji:'🧠',bg:'#1a1a2a',tagText:'Training',tagClass:'tag-blue',readTime:'6 min read',byline:'Santhosh Kumar, Certified Dog Trainer',likes:302,content:`<h2>The 3-second rule</h2><p>Dogs associate rewards with the action that happened in the last 3 seconds. Keep treats ready. Mark the exact moment of correct behaviour with "Yes!" or a clicker.</p><h2>Starting with basics</h2><ul><li><strong>Sit:</strong> Hold a treat above their nose and move it back. Say "Sit" when bottom lowers. Reward immediately.</li><li><strong>Stay:</strong> Ask for sit, pause 1 second, reward. Gradually extend.</li><li><strong>Come:</strong> Crouch down, open arms, happy voice. Reward every time — never call for something unpleasant.</li></ul><h2>What never to do</h2><p>Never use physical punishment or dominance-based techniques. These create fear, not obedience. Short, frequent sessions (5–10 minutes) are vastly better than long ones.</p>`},
+  {id:'a7',title:'Feeding your rescue dog',sub:'What to feed, how much, and why diet matters.',emoji:'🍚',bg:'#2a1a10',tagText:'Nutrition',tagClass:'tag-orange',readTime:'5 min read',byline:'Dr. Lakshmi Natarajan, Veterinary Nutritionist',likes:156,content:`<h2>Start with what the shelter was feeding</h2><p>Transition slowly by mixing old and new food over 7–10 days. Always keep fresh water accessible.</p><h2>Feeding amounts</h2><p>Small dogs under 10kg: 180–280g daily. Medium dogs 10–25kg: 280–450g. Large dogs: 450–650g. Split into two meals per day.</p><h2>Foods to avoid</h2><ul><li>Grapes and raisins — toxic</li><li>Onions and garlic — even cooked</li><li>Chocolate and xylitol</li><li>Raw chicken bones — can splinter</li><li>Avocado — contains persin</li></ul>`},
+  {id:'a8',title:'Senior dog adoption: why older dogs make the best companions',sub:'The case for adopting a dog aged 5 and above.',emoji:'🐾',bg:'#1a2a1a',tagText:'Story',tagClass:'tag-blue',readTime:'4 min read',byline:'By Meena Krishnamurthy, PawFinder volunteer',likes:421,content:`<h2>What senior dogs offer</h2><ul><li>Already house-trained</li><li>Personality is established — what you meet is who they are</li><li>Calmer energy — won't bounce off walls</li><li>Bond deeply and quickly</li><li>Lower maintenance — perfect for apartments</li></ul><h2>The emotional reward</h2><p>Adopting a senior dog is one of the most meaningful things a person can do. You are giving an animal a dignified, loved final chapter.</p><p>Charlie (7 years) has been waiting 4 months. Tiger (9 years) has been waiting 7 months. They are ready whenever you are.</p>`},
+],
+};
+
+const FOSTER_DOGS=[
+  {id:'dog-5',name:'Daisy',emoji:'🐶',breed:'Beagle mix',age:'6 months',location:'Adyar',urgency:'high',urgencyLabel:'Urgent — shelter at capacity',duration:'2–4 weeks',needs:'Playful family',desc:'Daisy needs a temporary home while completing her vaccine schedule.'},
+  {id:'dog-11',name:'Tiger',emoji:'🐕',breed:'Indie',age:'9 yrs',location:'Saidapet',urgency:'high',urgencyLabel:'Urgent — 7 months waiting',duration:'Open-ended',needs:'Quiet home',desc:'Tiger needs foster care after a minor health scare.'},
+  {id:'dog-8',name:'Lily',emoji:'🐶',breed:'Indie',age:'4 months',location:'Kodambakkam',urgency:'med',urgencyLabel:'Needed soon',duration:'3–6 weeks',needs:'Time & supervision',desc:'Lily needs a separate foster home to complete socialisation.'},
+  {id:'dog-15',name:'Kiki',emoji:'🐶',breed:'Indie',age:'8 months',location:'Royapettah',urgency:'low',urgencyLabel:'When available',duration:'2–3 weeks',needs:'Active household',desc:'Kiki needs short-term foster while her kennel space is refurbished.'},
+  {id:'dog-12',name:'Peanut',emoji:'🐶',breed:'Pom mix',age:'3 months',location:'Guindy',urgency:'med',urgencyLabel:'Needed within 1 week',duration:'4–6 weeks',needs:'Calm, gentle home',desc:'Peanut is too small for the main shelter environment.'},
+];
+
+const FOSTER_FAQ=[
+  {q:'Do I need experience?',a:'No. Shelters provide full orientation, 24/7 support, and match based on your lifestyle.'},
+  {q:'Who pays for food and vet bills?',a:'The shelter covers all costs — food, medication, and vet visits. You provide space, time, and love.'},
+  {q:'What if I fall in love and want to keep the dog?',a:"That's called a 'foster fail' — and we consider it a success! 78% of fosters end in adoption."},
+  {q:'How much time does it take daily?',a:'Typically 2–3 hours of active care. The rest of the day you just need to be present.'},
+  {q:'Can I foster if I have other pets?',a:'Often yes. We carefully match based on temperament. Some dogs need to be the only pet.'},
+];
+
+const VOL_ROLES=[
+  {emoji:'🚶',name:'Dog walker',sub:'Weekend morning walks · 2h sessions',spots:'open',spotsLabel:'12 spots open',bg:'#2a3a1a'},
+  {emoji:'📸',name:'Dog photographer',sub:'Photograph dogs for adoption listings',spots:'open',spotsLabel:'Flexible',bg:'#1a2a3a'},
+  {emoji:'🏥',name:'Vet assistant',sub:'Assist during vaccination drives',spots:'limited',spotsLabel:'3 spots left',bg:'#2a2a10'},
+  {emoji:'🧑‍💻',name:'Social media volunteer',sub:'Post, write captions, manage pages',spots:'open',spotsLabel:'Remote · flexible',bg:'#1a2a2a'},
+  {emoji:'🚗',name:'Transport volunteer',sub:'Rescue pickups and vet runs',spots:'limited',spotsLabel:'2 spots left',bg:'#2a1a3a'},
+  {emoji:'🧼',name:'Kennel cleaner',sub:'Saturday 8–10AM · High impact',spots:'open',spotsLabel:'10 spots open',bg:'#1a1a2a'},
+];
+
+const VOL_EVENTS=[
+  {date:'Sat, Apr 19 · 9 AM',title:'Mass vaccination drive',sub:'Blue Cross of India · Velachery · 4h event',attending:47},
+  {date:'Sun, Apr 20 · 7 AM',title:'Besant Nagar beach dog walk',sub:'Open to all dog owners · 2km route',attending:83},
+  {date:'Sat, Apr 26 · 10 AM',title:'Adoption awareness camp',sub:'Anna Nagar West · 6 hours · stall setup needed',attending:22},
+  {date:'Sun, May 4 · 8 AM',title:'ABC outreach — Perambur',sub:'Sterilisation drive · vet support needed',attending:15},
+];
+
+const VOL_LEADERBOARD=[
+  {name:'Meena R.',city:'Velachery',avatar:'MR',color:'#3a5a2a',hours:94,badge:'🥇'},
+  {name:'Karthik S.',city:'Anna Nagar',avatar:'KS',color:'#2a4a6a',hours:78,badge:'🥈'},
+  {name:'Divya P.',city:'Adyar',avatar:'DP',color:'#5a2a4a',hours:65,badge:'🥉'},
+  {name:'Sanjay N.',city:'T. Nagar',avatar:'SN',color:'#4a3a1a',hours:51,badge:''},
+  {name:'You',city:'Chennai',avatar:'AD',color:'#3a5a8a',hours:0,badge:''},
+];
+
+const QUIZZES=[
+  {q:'How long is the average gestation period of a dog?',opts:['45 days','63 days','90 days','30 days'],correct:1},
+  {q:'What is the most common cause of death in dogs worldwide?',opts:['Infections','Cancer','Road accidents','Obesity'],correct:1},
+  {q:'Which dog breed is known as the "Barkless Dog"?',opts:['Shiba Inu','Basenji','Saluki','Akita'],correct:1},
+  {q:'At what age should puppies receive their first vaccine?',opts:['6–8 weeks','12 weeks','4 weeks','16 weeks'],correct:0},
+  {q:'Which sense is most developed in dogs?',opts:['Sight','Hearing','Smell','Touch'],correct:2},
+];
+let quizIdx=0;
+
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+function simpleHash(s){let h=0;for(let i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0;}return Math.abs(h).toString(36);}
+function createToken(uid){return btoa(JSON.stringify({userId:uid,exp:Date.now()+86400000}));}
+function parseToken(t){try{const{userId,exp}=JSON.parse(atob(t));if(Date.now()>exp)return null;return userId;}catch{return null;}}
+function uid(){return 'u_'+Math.random().toString(36).slice(2,10);}
+function delay(ms){return new Promise(r=>setTimeout(r,ms));}
+function tClass(tag){if(['Vaccinated','Child-friendly','Good with cats','Calm','Playful'].includes(tag))return 'tag-green';if(['Neutered','Trained'].includes(tag))return 'tag-blue';return 'tag-orange';}
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let currentUser=null,currentPage='page-login',prevPage='page-home',currentFilter='all',currentDogId=null,currentSearch='',toastTimer=null,chatShelterName='Blue Cross of India',chatDogName='Bruno',currentShelterFilter='all',currentAwarenessFilter='all';
+
+// ─── API ──────────────────────────────────────────────────────────────────────
+const API={
+  auth:{
+    async login(){
+      const email=document.getElementById('login-email').value.trim();
+      const pw=document.getElementById('login-password').value;
+      const err=document.getElementById('login-error');
+      err.classList.remove('show');
+      if(!email||!pw){err.textContent='Please fill in all fields.';err.classList.add('show');return;}
+      showLoading('Signing in…');await delay(600);
+      const users=DB.filter('users')||[];
+      const user=users.find(u=>u.email===email.toLowerCase());
+      if(!user||user.passwordHash!==simpleHash(pw)){hideLoading();err.textContent='Invalid email or password.';err.classList.add('show');return;}
+      DB.set('session',{token:createToken(user.id),userId:user.id});
+      hideLoading();onLogin(user);
+    },
+    async register(){
+      const name=document.getElementById('reg-name').value.trim();
+      const email=document.getElementById('reg-email').value.trim();
+      const phone=document.getElementById('reg-phone').value.trim();
+      const city=document.getElementById('reg-city').value.trim();
+      const pw=document.getElementById('reg-password').value;
+      const err=document.getElementById('register-error');
+      err.classList.remove('show');
+      if(!name||!email||!pw){err.textContent='Name, email and password are required.';err.classList.add('show');return;}
+      if(pw.length<6){err.textContent='Password must be at least 6 characters.';err.classList.add('show');return;}
+      showLoading('Creating account…');await delay(700);
+      const users=DB.filter('users')||[];
+      if(users.find(u=>u.email===email.toLowerCase())){hideLoading();err.textContent='An account with this email already exists.';err.classList.add('show');return;}
+      const user={id:uid(),name,email:email.toLowerCase(),phone:phone||'',city:city||'Chennai',passwordHash:simpleHash(pw),createdAt:Date.now(),avatar:name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)};
+      DB.push('users',user);
+      DB.set('session',{token:createToken(user.id),userId:user.id});
+      DB.push('notifications_'+user.id,{id:uid(),title:'🎉 Welcome to PawFinder!',sub:'Start browsing dogs available for adoption near you.',read:false,ts:Date.now()});
+      hideLoading();onLogin(user);
+    },
+    logout(){DB.set('session',null);currentUser=null;showPage('page-login');showToast('Signed out successfully');}
+  },
+  user:{
+    get(){const s=DB.get('session');if(!s)return null;const id=parseToken(s.token);if(!id)return null;return DB.find('users',u=>u.id===id);},
+    updateProfile(){
+      const name=document.getElementById('edit-name').value.trim();
+      const phone=document.getElementById('edit-phone').value.trim();
+      const city=document.getElementById('edit-city').value.trim();
+      if(!name){showToast('Name cannot be empty');return;}
+      const u=DB.update('users',currentUser.id,{name,phone,city,avatar:name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)});
+      currentUser=u;updateProfileUI();closeModal('edit-modal');showToast('Profile updated ✓');
+    }
+  },
+  dogs:{
+    list(filter='all',query=''){
+      let dogs=[...SEED.dogs];
+      if(filter==='puppy')dogs=dogs.filter(d=>d.ageGroup==='puppy');
+      else if(filter==='adult')dogs=dogs.filter(d=>d.ageGroup==='adult');
+      else if(filter==='senior')dogs=dogs.filter(d=>d.ageGroup==='senior');
+      else if(filter==='near')dogs=dogs.filter(d=>parseFloat(d.distance)<=4);
+      else if(filter==='female')dogs=dogs.filter(d=>d.gender==='Female');
+      else if(filter==='male')dogs=dogs.filter(d=>d.gender==='Male');
+      else if(filter==='vaccinated')dogs=dogs.filter(d=>d.tags.includes('Vaccinated'));
+      else if(filter==='small')dogs=dogs.filter(d=>d.size==='Small');
+      else if(filter==='large')dogs=dogs.filter(d=>d.size==='Large');
+      else if(filter==='trained')dogs=dogs.filter(d=>d.tags.includes('Trained'));
+      if(query){const q=query.toLowerCase();dogs=dogs.filter(d=>d.name.toLowerCase().includes(q)||d.breed.toLowerCase().includes(q)||d.location.toLowerCase().includes(q)||d.tags.some(t=>t.toLowerCase().includes(q)));}
+      return dogs;
+    },
+    get(id){return SEED.dogs.find(d=>d.id===id)||null;},
+    isFavourite(dogId){if(!currentUser)return false;return(DB.get('favs_'+currentUser.id)||[]).includes(dogId);},
+    toggleFavourite(dogId){
+      if(!currentUser)return false;
+      const k='favs_'+currentUser.id;const f=DB.get(k)||[];const i=f.indexOf(dogId);
+      if(i===-1)f.push(dogId);else f.splice(i,1);
+      DB.set(k,f);return i===-1;
+    },
+    getFavourites(){if(!currentUser)return[];const f=DB.get('favs_'+currentUser.id)||[];return SEED.dogs.filter(d=>f.includes(d.id));}
+  },
+  adoption:{
+    async submit(){
+      if(!currentUser)return;
+      showLoading('Submitting application…');await delay(1200);
+      const appId=uid();
+      const dog=API.dogs.get(currentDogId)||SEED.dogs[0];
+      const shelter=SEED.shelters.find(s=>s.id===(dog.shelter||'shelter-1'))||SEED.shelters[0];
+      const app={id:appId,userId:currentUser.id,dogId:dog.id,dogName:dog.name,dogEmoji:dog.emoji,shelter:shelter.name,status:'pending',progress:35,submittedAt:Date.now()};
+      DB.push('applications_'+currentUser.id,app);
+      DB.push('notifications_'+currentUser.id,{id:uid(),title:'📋 Application received',sub:`Your application for ${dog.name} is under review. We'll update you within 48 hours.`,read:false,ts:Date.now()});
+      hideLoading();showToast('Application submitted! 🎉');switchNav(2);renderApplications();updateProfileUI();
+      setTimeout(()=>{DB.update('applications_'+currentUser.id,appId,{status:'pending',progress:65,note:'Home visit scheduled'});renderApplications();},4000);
+      setTimeout(()=>{
+        DB.update('applications_'+currentUser.id,appId,{status:'approved',progress:100});
+        DB.push('notifications_'+currentUser.id,{id:uid(),title:'✅ Application approved!',sub:`Congratulations! ${shelter.name} has approved your application for ${dog.name}.`,read:false,ts:Date.now()});
+        renderApplications();updateNotifDot();updateProfileUI();showToast('🎉 Application approved by shelter!');
+      },10000);
+    }
+  },
+  notifications:{
+    getAll(){if(!currentUser)return[];return(DB.filter('notifications_'+currentUser.id)||[]).sort((a,b)=>b.ts-a.ts);},
+    markAllRead(){if(!currentUser)return;const k='notifications_'+currentUser.id;const n=DB.filter(k)||[];n.forEach(x=>{x.read=true;});DB.set(k,n);}
+  },
+  chat:{
+    history:[],
+    async send(msg,shelter,dog){
+      this.history.push({role:'user',content:msg});
+      const sys=`You are a friendly customer service assistant for ${shelter}, an animal rescue shelter in Chennai, India. The user is interested in adopting a dog named ${dog}. Keep responses concise (2-3 sentences), warm, and helpful. Answer questions about adoption process, visiting, fees (₹500-1500 typically), scheduling, dog care, and fostering.`;
+      try{
+        const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:300,system:sys,messages:this.history})});
+        const d=await r.json();
+        const t=d.content?.map(c=>c.text||'').join('')||"I'll be happy to help! Please contact our shelter directly for more details.";
+        this.history.push({role:'assistant',content:t});return t;
+      }catch(e){
+        const f="Thank you for your interest! Please call us or visit during working hours.";
+        this.history.push({role:'assistant',content:f});return f;
+      }
+    }
+  }
+};
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+function init(){
+  DB._load();
+  const users=DB.filter('users');
+  if(!users||!users.find(u=>u.email==='demo@pawfinder.in')){
+    DB.push('users',{id:'demo-user',name:'Adithya Kumar',email:'demo@pawfinder.in',phone:'+91 9876543210',city:'Chennai',passwordHash:simpleHash('demo123'),createdAt:Date.now(),avatar:'AD'});
+    const notifs=[
+      {id:'n1',title:'🐾 Welcome to PawFinder!',sub:'Browse dogs available for adoption near you.',read:false,ts:Date.now()-3600000},
+      {id:'n2',title:'📍 New dog nearby',sub:'Biscuit (Indie mix, 5 months) was just listed 2.8km from you.',read:false,ts:Date.now()-7200000},
+      {id:'n3',title:'💚 Awareness tip',sub:'Senior dogs have a 60% lower adoption rate. Charlie and Tiger are still waiting.',read:true,ts:Date.now()-86400000},
+      {id:'n4',title:'🏥 Blue Cross open day',sub:'Visit this Saturday 10AM–2PM for free meet-and-greet sessions.',read:true,ts:Date.now()-172800000},
+      {id:'n5',title:'🚨 Urgent foster needed',sub:'Tiger (9 yrs, SPCA) needs a foster home this weekend.',read:false,ts:Date.now()-900000},
+      {id:'n6',title:'📣 Vaccination drive this weekend',sub:'Free rabies vaccination for community dogs near your area — Sat Apr 19, 9AM.',read:false,ts:Date.now()-1800000},
+    ];
+    notifs.forEach(n=>DB.push('notifications_demo-user',n));
+  }
+  const session=DB.get('session');
+  if(session){const id=parseToken(session.token);if(id){const user=DB.find('users',u=>u.id===id);if(user){onLogin(user);return;}}}
+  updateClock();setInterval(updateClock,15000);
+}
+
+function onLogin(user){
+  currentUser=user;
+  updateClock();setInterval(updateClock,15000);
+  updateProfileUI();renderDogGrid('all','');renderShelters();renderAwareness();renderApplications();renderNotifications();renderFoster();renderVolunteer();
+  showPage('page-home');
+}
+
+function demoLogin(){document.getElementById('login-email').value='demo@pawfinder.in';document.getElementById('login-password').value='demo123';API.auth.login();}
+
+// ─── NAVIGATION ───────────────────────────────────────────────────────────────
+function showPage(id){if(currentPage!==id)prevPage=currentPage;document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active');currentPage=id;}
+function goBack(){const m={'page-profile':'page-home','page-adoption':'page-profile','page-chat':'page-profile','page-notifications':prevPage||'page-home','page-article':'page-awareness','page-volunteer':'page-awareness'};showPage(m[currentPage]||'page-home');}
+const navPages=['page-home','page-shelters','page-applications','page-foster','page-awareness','page-user-profile'];
+function switchNav(idx){showPage(navPages[idx]);}
+
+// ─── UI HELPERS ───────────────────────────────────────────────────────────────
+function showLoading(t='Loading…'){document.getElementById('loading-text').textContent=t;document.getElementById('loading').style.display='flex';}
+function hideLoading(){document.getElementById('loading').style.display='none';}
+let toastT=null;
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');if(toastT)clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2600);}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+function openModal(id){document.getElementById(id).classList.add('show');}
+function updateClock(){const n=new Date();document.getElementById('clock').textContent=n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0');}
+
+function updateNotifDot(){
+  if(!currentUser)return;
+  const nc=(DB.filter('notifications_'+currentUser.id)||[]).filter(n=>!n.read).length;
+  document.getElementById('notif-dot').style.display=nc>0?'':'none';
+}
+
+function updateProfileUI(){
+  if(!currentUser)return;
+  const i=currentUser.avatar||'AD';
+  document.getElementById('greeting-text').textContent=`Hello, ${currentUser.name.split(' ')[0]} 👋`;
+  document.getElementById('user-avatar').textContent=i;
+  document.getElementById('big-avatar').textContent=i;
+  document.getElementById('big-name').textContent=currentUser.name;
+  document.getElementById('big-email').textContent=currentUser.email;
+  document.getElementById('big-location').textContent=`📍 ${currentUser.city||'Chennai'}, Tamil Nadu`;
+  const fc=(DB.get('favs_'+currentUser.id)||[]).length;
+  const ac=(DB.filter('applications_'+currentUser.id)||[]).length;
+  const nc=(DB.filter('notifications_'+currentUser.id)||[]).filter(n=>!n.read).length;
+  document.getElementById('fav-count-menu').textContent=fc+' saved';
+  document.getElementById('app-count-menu').textContent=ac+' active';
+  document.getElementById('notif-count-menu').textContent=nc+' unread';
+  document.getElementById('notif-dot').style.display=nc>0?'':'none';
+  document.getElementById('stat-apps').textContent=ac;
+  document.getElementById('stat-favs').textContent=fc;
+}
+
+function showEditProfile(){
+  if(!currentUser)return;
+  document.getElementById('edit-name').value=currentUser.name||'';
+  document.getElementById('edit-phone').value=currentUser.phone||'';
+  document.getElementById('edit-city').value=currentUser.city||'';
+  openModal('edit-modal');
+}
+
+// ─── DOG GRID ─────────────────────────────────────────────────────────────────
+function renderDogGrid(filter='all',query=''){
+  const grid=document.getElementById('dog-grid');
+  const dogs=API.dogs.list(filter,query);
+  if(dogs.length===0){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:30px 0;color:var(--text-muted);font-size:14px">No dogs found 🐾</div>';return;}
+  const favs=DB.get('favs_'+(currentUser?.id||''))||[];
+  const seniors=['dog-6','dog-11','dog-16'];
+  const shown=dogs.slice(0,5);
+  grid.innerHTML=shown.map(d=>`<div class="dog-card" onclick="showDogModal('${d.id}')"><div class="dog-card-img">${d.emoji}${seniors.includes(d.id)?'<div class="dog-card-urgency">Senior</div>':''}<div class="dog-card-fav">${favs.includes(d.id)?'❤️':''}</div></div><div class="dog-card-body"><div class="dog-card-name">${d.name}</div><div class="dog-card-sub">${d.breed} · ${d.age} · ${d.distance}</div><span class="tag ${tClass(d.tags[0])}">${d.tags[0]}</span></div></div>`).join('')
+    +(dogs.length>5?`<div class="see-all-card" onclick="showAllDogs()"><div style="font-size:22px;color:var(--text-muted)">＋</div><div style="font-size:13px;color:var(--text-secondary);font-weight:500">See all ${dogs.length} dogs</div></div>`:'');
+}
+
+function showAllDogs(){
+  const all=API.dogs.list('all','');
+  const favs=DB.get('favs_'+(currentUser?.id||''))||[];
+  const seniors=['dog-6','dog-11','dog-16'];
+  document.getElementById('dog-grid').innerHTML=all.map(d=>`<div class="dog-card" onclick="showDogModal('${d.id}')"><div class="dog-card-img">${d.emoji}${seniors.includes(d.id)?'<div class="dog-card-urgency">Senior</div>':''}<div class="dog-card-fav">${favs.includes(d.id)?'❤️':''}</div></div><div class="dog-card-body"><div class="dog-card-name">${d.name}</div><div class="dog-card-sub">${d.breed} · ${d.age} · ${d.distance}</div><span class="tag ${tClass(d.tags[0])}">${d.tags[0]}</span></div></div>`).join('');
+  document.getElementById('dog-grid').scrollIntoView({behavior:'smooth'});
+}
+
+function setFilter(el,val){
+  document.querySelectorAll('.filter-row .filter-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  currentFilter=val;
+  renderDogGrid(val,currentSearch);
+}
+
+function handleSearch(val){
+  currentSearch=val;
+  renderDogGrid(currentFilter,val);
+}
+
+// ─── DOG MODAL ────────────────────────────────────────────────────────────────
+function showDogModal(id){
+  currentDogId=id;
+  const d=API.dogs.get(id);if(!d)return;
+  document.getElementById('modal-emoji').textContent=d.emoji;
+  document.getElementById('modal-name').textContent=d.name;
+  document.getElementById('modal-sub').textContent=`${d.breed} · ${d.age} · ${d.location} · ${d.distance}`;
+  document.getElementById('modal-tag').innerHTML=d.tags.map(t=>`<span class="tag ${tClass(t)}" style="margin-right:4px">${t}</span>`).join('');
+  document.getElementById('modal-about').textContent=d.about.slice(0,120)+'…';
+  document.getElementById('modal-stats').innerHTML=`<div class="stat-box"><div class="stat-val">${d.age}</div><div class="stat-label">Age</div></div><div class="stat-box"><div class="stat-val">${d.gender}</div><div class="stat-label">Gender</div></div><div class="stat-box"><div class="stat-val">${d.size}</div><div class="stat-label">Size</div></div>`;
+  const fav=API.dogs.isFavourite(id);
+  const btn=document.querySelector('#dog-modal .modal-close-btn');
+  btn.textContent=fav?'❤️ Saved':'🤍 Save';
+  openModal('dog-modal');
+}
+
+function toggleModalFav(){
+  if(!currentDogId)return;
+  const added=API.dogs.toggleFavourite(currentDogId);
+  document.querySelector('#dog-modal .modal-close-btn').textContent=added?'❤️ Saved':'🤍 Save';
+  showToast(added?'Added to saved dogs ❤️':'Removed from saved');
+  updateProfileUI();renderDogGrid(currentFilter,currentSearch);
+}
+
+// ─── DOG PROFILE ─────────────────────────────────────────────────────────────
+function openDogProfile(id){
+  currentDogId=id;
+  const d=API.dogs.get(id);if(!d)return;
+  const shelter=SEED.shelters.find(s=>s.id===d.shelter)||SEED.shelters[0];
+  document.getElementById('profile-hero').textContent=d.emoji;
+  document.getElementById('profile-name').textContent=d.name;
+  document.getElementById('profile-about-name').textContent=d.name;
+  document.getElementById('profile-location').textContent=`📍 ${d.location} · ${d.distance} away`;
+  document.getElementById('profile-tags').innerHTML=d.tags.map(t=>`<span class="tag ${tClass(t)}">${t}</span>`).join('');
+  document.getElementById('p-age').textContent=d.age;
+  document.getElementById('p-gender').textContent=d.gender;
+  document.getElementById('p-weight').textContent=d.weight;
+  document.getElementById('p-size').textContent=d.size;
+  document.getElementById('p-goodwith').textContent=d.goodwith;
+  document.getElementById('p-energy').textContent=d.energy;
+  document.getElementById('p-exercise').textContent=d.exercise;
+  document.getElementById('p-grooming').textContent=d.grooming;
+  document.getElementById('p-space').textContent=d.space;
+  document.getElementById('p-diet').textContent=d.diet;
+  document.getElementById('profile-about').textContent=d.about;
+  document.getElementById('p-shelter-name').textContent=shelter.name;
+  document.getElementById('p-shelter-sub').textContent=`${shelter.open?'Open':'Closed'} · ${shelter.hours} · ${shelter.distance}`;
+  document.getElementById('profile-health-rows').innerHTML=d.health.map(h=>`<div class="health-row"><div class="health-label">${h.label}</div><div><span class="health-status ${h.status}">${h.status==='hs-good'?'Good':h.status==='hs-due'?'Due':'Overdue'}</span></div><div class="health-value">${h.value}</div></div>`).join('');
+  document.getElementById('profile-traits').innerHTML=d.traits.map(t=>`<span class="tag tag-blue">${t}</span>`).join('');
+  const similar=SEED.dogs.filter(x=>x.id!==id&&x.ageGroup===d.ageGroup).slice(0,4);
+  document.getElementById('similar-dogs').innerHTML=similar.map(s=>`<div class="h-dog-card" onclick="openDogProfile('${s.id}')"><div class="h-dog-img">${s.emoji}</div><div class="h-dog-body"><div class="h-dog-name">${s.name}</div><div class="h-dog-sub">${s.breed} · ${s.age}</div></div></div>`).join('');
+  document.getElementById('profile-reviews').innerHTML=d.reviews&&d.reviews.length>0?d.reviews.map(r=>`<div class="review-card"><div class="review-stars">${'⭐'.repeat(r.stars)}</div><div class="review-text">"${r.text}"</div><div class="review-author">— ${r.author}</div></div>`).join(''):'<div style="font-size:13px;color:var(--text-muted);margin-bottom:16px">No reviews yet — be the first to adopt!</div>';
+  const isFav=API.dogs.isFavourite(id);
+  const hb=document.getElementById('heart-btn');
+  hb.textContent=isFav?'❤️':'🤍';
+  hb.className='heart-btn'+(isFav?' liked':'');
+  document.getElementById('adopt-dog-emoji').textContent=d.emoji;
+  document.getElementById('adopt-dog-name').textContent=`Adopting ${d.name}`;
+  document.getElementById('adopt-dog-shelter').textContent=`${shelter.name} · ${d.location}`;
+  chatShelterName=shelter.name;chatDogName=d.name;
+  closeModal('dog-modal');showPage('page-profile');
+}
+
+function toggleFavourite(){
+  if(!currentDogId)return;
+  const added=API.dogs.toggleFavourite(currentDogId);
+  const hb=document.getElementById('heart-btn');
+  hb.textContent=added?'❤️':'🤍';
+  hb.className='heart-btn'+(added?' liked':'');
+  showToast(added?'Saved to favourites ❤️':'Removed from favourites');
+  updateProfileUI();
+}
+
+function showFavourites(){
+  const favs=API.dogs.getFavourites();
+  if(favs.length===0){showToast('No saved dogs yet — browse and save some!');return;}
+  const domFavs=DB.get('favs_'+(currentUser?.id||''))||[];
+  document.getElementById('dog-grid').innerHTML=favs.map(d=>`<div class="dog-card" onclick="showDogModal('${d.id}')"><div class="dog-card-img">${d.emoji}<div class="dog-card-fav">❤️</div></div><div class="dog-card-body"><div class="dog-card-name">${d.name}</div><div class="dog-card-sub">${d.breed} · ${d.age} · ${d.distance}</div><span class="tag ${tClass(d.tags[0])}">${d.tags[0]}</span></div></div>`).join('');
+  switchNav(0);showToast(`Showing ${favs.length} saved dog${favs.length>1?'s':''}`);
+}
+
+// ─── CHAT ─────────────────────────────────────────────────────────────────────
+function openChatWithShelter(){
+  API.chat.history=[];
+  document.getElementById('chat-shelter-name').textContent=chatShelterName;
+  document.getElementById('chat-messages').innerHTML='';
+  appendMsg(`Hi! I'm the virtual assistant for ${chatShelterName}. I can answer questions about adopting ${chatDogName}. How can I help?`,'from-shelter');
+  showPage('page-chat');
+}
+
+function appendMsg(text,cls){
+  const div=document.createElement('div');
+  div.className='msg-bubble '+cls;
+  div.innerHTML=`${text}<div class="msg-time">${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</div>`;
+  document.getElementById('chat-messages').appendChild(div);
+  div.scrollIntoView({behavior:'smooth'});
+  return div;
+}
+
+async function sendMessage(){
+  const inp=document.getElementById('chat-input');
+  const msg=inp.value.trim();if(!msg)return;
+  inp.value='';
+  appendMsg(msg,'from-user');
+  const typing=document.createElement('div');
+  typing.className='typing-indicator';
+  typing.innerHTML='<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+  document.getElementById('chat-messages').appendChild(typing);
+  typing.scrollIntoView({behavior:'smooth'});
+  const reply=await API.chat.send(msg,chatShelterName,chatDogName);
+  typing.remove();
+  appendMsg(reply,'from-shelter');
+}
+
+function quickReply(msg){document.getElementById('chat-input').value=msg;sendMessage();}
+
+// ─── SHELTERS ─────────────────────────────────────────────────────────────────
+function renderShelters(query=''){
+  let s=[...SEED.shelters];
+  if(query){const q=query.toLowerCase();s=s.filter(x=>x.name.toLowerCase().includes(q)||x.location.toLowerCase().includes(q));}
+  if(currentShelterFilter==='open')s=s.filter(x=>x.open);
+  else if(currentShelterFilter==='verified')s=s.filter(x=>x.verified);
+  else if(currentShelterFilter==='near')s=[...s].sort((a,b)=>parseFloat(a.distance)-parseFloat(b.distance));
+  else if(currentShelterFilter==='most_dogs')s=[...s].sort((a,b)=>b.dogCount-a.dogCount);
+  document.getElementById('shelter-list').innerHTML=s.map(x=>`
+    <div class="shelter-list-card">
+      <div class="shelter-card-top">
+        <div class="shelter-list-icon" style="background:${x.color}">${x.emoji}</div>
+        <div>
+          <div class="shelter-list-name">${x.name} ${x.verified?'<span style="color:var(--accent-light);font-size:12px">✓</span>':''}</div>
+          <div class="shelter-list-sub">${x.location} · ${x.distance} · ${x.open?'<span style="color:var(--accent-light)">Open now</span>':'<span style="color:var(--text-muted)">Closed</span>'}</div>
+        </div>
+      </div>
+      <div style="font-size:13px;color:var(--text-secondary);margin-bottom:10px;line-height:1.5">${x.about}</div>
+      <div class="shelter-tags">${x.tags.map(t=>`<span class="tag tag-blue">${t}</span>`).join('')}</div>
+      <div class="shelter-stats-row" style="margin-top:10px">
+        <div class="shelter-stat"><span>${x.dogCount}</span> dogs</div>
+        <div class="shelter-stat"><span>${x.rating}</span>★</div>
+        <div class="shelter-stat"><span>${x.weeklyAdoptions}</span>/wk adopted</div>
+        <div class="shelter-stat"><span>${x.volunteers}</span> volunteers</div>
+      </div>
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;gap:10px">
+        <div onclick="showToast('Calling ${x.name}…')" style="flex:1;text-align:center;padding:8px;background:var(--surface3);border-radius:10px;font-size:12px;color:var(--text-secondary);cursor:pointer">📞 Call</div>
+        <div onclick="showToast('Opening maps…')" style="flex:1;text-align:center;padding:8px;background:var(--surface3);border-radius:10px;font-size:12px;color:var(--text-secondary);cursor:pointer">📍 Directions</div>
+        <div onclick="showToast('Opening website…')" style="flex:1;text-align:center;padding:8px;background:var(--surface3);border-radius:10px;font-size:12px;color:var(--text-secondary);cursor:pointer">🌐 Website</div>
+      </div>
+    </div>`).join('');
+}
+
+function filterShelters(val){renderShelters(val);}
+
+function setShelterFilter(el,val){
+  document.querySelectorAll('.shelters-header .filter-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  currentShelterFilter=val;
+  renderShelters();
+}
+
+// ─── APPLICATIONS ─────────────────────────────────────────────────────────────
+function renderApplications(){
+  if(!currentUser)return;
+  const apps=DB.filter('applications_'+currentUser.id)||[];
+  const list=document.getElementById('applications-list');
+  const countEl=document.getElementById('app-count-text');
+  if(apps.length===0){
+    countEl.textContent='No applications yet';
+    list.innerHTML=`<div style="padding:0 20px 20px;text-align:center"><div style="font-size:40px;margin-bottom:12px">📋</div><div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:600;color:var(--text);margin-bottom:8px">No applications yet</div><div style="font-size:14px;color:var(--text-secondary)">Browse dogs and start an adoption application</div></div>`;
+    return;
+  }
+  countEl.textContent=apps.length+' application'+(apps.length>1?'s':'');
+  list.innerHTML=apps.map(a=>`
+    <div class="app-card">
+      <div class="app-card-top">
+        <div style="font-size:28px">${a.dogEmoji||'🐕'}</div>
+        <div><div class="app-card-name">${a.dogName}</div><div class="app-card-sub">${a.shelter}</div></div>
+        <div class="app-status ${a.status}">${a.status==='approved'?'✅ Approved':a.status==='rejected'?'❌ Rejected':'⏳ Pending'}</div>
+      </div>
+      <div class="app-progress"><div class="app-progress-fill" style="width:${a.progress||35}%"></div></div>
+      <div class="app-timeline">
+        <div class="timeline-step"><div class="timeline-dot done"></div><div class="timeline-label done">Application submitted</div></div>
+        <div class="timeline-step"><div class="timeline-dot ${a.progress>=65?'done':'pending'}"></div><div class="timeline-label ${a.progress>=65?'done':''}">Shelter review</div></div>
+        <div class="timeline-step"><div class="timeline-dot ${a.progress>=85?'done':'pending'}"></div><div class="timeline-label ${a.progress>=85?'done':''}">Home visit</div></div>
+        <div class="timeline-step"><div class="timeline-dot ${a.status==='approved'?'done':'pending'}"></div><div class="timeline-label ${a.status==='approved'?'done':''}">Approval &amp; paperwork</div></div>
+      </div>
+      ${a.note?`<div style="margin-top:8px;font-size:12px;color:var(--accent-light);background:var(--accent-dim);padding:8px 10px;border-radius:8px">📅 ${a.note}</div>`:''}
+    </div>`).join('');
+}
+
+// ─── NOTIFICATIONS ────────────────────────────────────────────────────────────
+function renderNotifications(){
+  if(!currentUser)return;
+  const notifs=API.notifications.getAll();
+  const list=document.getElementById('notif-list');
+  if(notifs.length===0){list.innerHTML='<div style="text-align:center;padding:40px 20px;color:var(--text-muted)">No notifications yet</div>';return;}
+  list.innerHTML=notifs.map(n=>`<div class="notif-item ${n.read?'':'unread'}" onclick="markOneRead('${n.id}')">
+    ${!n.read?'<div class="notif-dot-small"></div>':'<div style="width:8px;flex-shrink:0"></div>'}
+    <div class="notif-body"><div class="notif-title">${n.title}</div><div class="notif-sub">${n.sub}</div></div>
+  </div>`).join('');
+  updateNotifDot();
+}
+
+function markOneRead(id){
+  if(!currentUser)return;
+  const k='notifications_'+currentUser.id;
+  const notifs=DB.filter(k)||[];
+  const n=notifs.find(x=>x.id===id);
+  if(n){n.read=true;DB.set(k,notifs);}
+  renderNotifications();updateProfileUI();
+}
+
+function markAllRead(){
+  API.notifications.markAllRead();
+  renderNotifications();updateProfileUI();
+  showToast('All notifications marked as read');
+}
+
+// ─── AWARENESS / ARTICLES ─────────────────────────────────────────────────────
+function renderAwareness(filter='all'){
+  let articles=[...SEED.articles];
+  if(filter!=='all')articles=articles.filter(a=>a.tagText===filter);
+  document.getElementById('awareness-list').innerHTML=articles.map(a=>`
+    <div class="awareness-card" onclick="openArticle('${a.id}')">
+      <div class="awareness-img" style="background:${a.bg}">${a.emoji}</div>
+      <div class="awareness-body">
+        <div class="awareness-tag ${a.tagClass}">${a.tagText}</div>
+        <div class="awareness-art-title">${a.title}</div>
+        <div class="awareness-art-sub">${a.sub}</div>
+        <div class="awareness-meta">
+          <div class="awareness-author">${a.byline} · ${a.readTime}</div>
+          <div class="awareness-likes">♥ ${a.likes}</div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function setAwarenessFilter(el,val){
+  document.querySelectorAll('#awareness-filters .filter-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  currentAwarenessFilter=val;
+  renderAwareness(val);
+}
+
+function openArticle(id){
+  const a=SEED.articles.find(x=>x.id===id);if(!a)return;
+  document.getElementById('article-page-title').textContent=a.tagText;
+  document.getElementById('article-hero-img').style.background=a.bg;
+  document.getElementById('article-hero-img').textContent=a.emoji;
+  document.getElementById('article-tag-pill').textContent=a.tagText;
+  document.getElementById('article-tag-pill').className='awareness-tag '+a.tagClass;
+  document.getElementById('article-read-time').textContent=a.readTime;
+  document.getElementById('article-full-title').textContent=a.title;
+  document.getElementById('article-byline').textContent=a.byline+' · ♥ '+a.likes;
+  document.getElementById('article-content').innerHTML=a.content;
+  const related=SEED.articles.filter(x=>x.id!==id&&x.tagText===a.tagText).slice(0,2);
+  document.getElementById('related-articles').innerHTML=related.map(r=>`<div onclick="openArticle('${r.id}')" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;margin-bottom:8px;cursor:pointer;display:flex;gap:10px;align-items:center">
+    <div style="font-size:24px;width:44px;height:44px;background:${r.bg};border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">${r.emoji}</div>
+    <div><div style="font-size:13px;font-weight:500;color:var(--text)">${r.title}</div><div style="font-size:11px;color:var(--text-muted)">${r.readTime}</div></div>
+  </div>`).join('');
+  showPage('page-article');
+}
+
+// ─── FOSTER ───────────────────────────────────────────────────────────────────
+function renderFoster(){
+  const urgencyClass={high:'urgency-high',med:'urgency-med',low:'urgency-low'};
+  document.getElementById('foster-list').innerHTML=FOSTER_DOGS.map(d=>`
+    <div class="foster-card" onclick="openDogProfile('${d.id}')">
+      <div class="foster-card-top">
+        <div class="foster-emoji">${d.emoji}</div>
+        <div style="flex:1">
+          <div class="foster-name">${d.name}</div>
+          <div class="foster-sub">${d.breed} · ${d.age} · ${d.location}</div>
+          <span class="foster-urgency-badge ${urgencyClass[d.urgency]}">${d.urgencyLabel}</span>
+        </div>
+      </div>
+      <div style="font-size:13px;color:var(--text-secondary);line-height:1.55;margin-bottom:8px">${d.desc}</div>
+      <div class="foster-details-row">
+        <div class="foster-detail-item">⏱ Duration: <span>${d.duration}</span></div>
+        <div class="foster-detail-item">💙 Needs: <span>${d.needs}</span></div>
+      </div>
+      <button onclick="event.stopPropagation();showToast('Applying to foster ${d.name}… 📋')" style="margin-top:12px;width:100%;padding:10px;background:var(--nav-active);border:none;border-radius:10px;color:#fff;font-family:'Syne',sans-serif;font-size:13px;font-weight:600;cursor:pointer">Apply to foster ${d.name}</button>
+    </div>`).join('');
+  document.getElementById('foster-faq').innerHTML=FOSTER_FAQ.map((f,i)=>`
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">${f.q} <span style="float:right;color:var(--text-muted)">+</span></div>
+      <div class="faq-a">${f.a}</div>
+    </div>`).join('');
+}
+
+// ─── VOLUNTEER ────────────────────────────────────────────────────────────────
+function renderVolunteer(){
+  const spotsClass={open:'spots-open',limited:'spots-limited',full:'spots-full'};
+  document.getElementById('vol-roles').innerHTML=VOL_ROLES.map(r=>`
+    <div class="vol-role-card" onclick="showToast('Opening signup for ${r.name}…')">
+      <div class="vol-role-icon" style="background:${r.bg}">${r.emoji}</div>
+      <div style="flex:1">
+        <div class="vol-role-name">${r.name}</div>
+        <div class="vol-role-sub">${r.sub}</div>
+      </div>
+      <div class="vol-role-spots ${spotsClass[r.spots]}">${r.spotsLabel}</div>
+    </div>`).join('');
+  document.getElementById('vol-events').innerHTML=VOL_EVENTS.map(e=>`
+    <div class="vol-event-card">
+      <div class="vol-event-date">${e.date}</div>
+      <div class="vol-event-title">${e.title}</div>
+      <div class="vol-event-sub">${e.sub}</div>
+      <div class="vol-event-footer">
+        <button class="vol-attend-btn" onclick="showToast('Registered for ${e.title}! 🎉')">Attend</button>
+        <div class="vol-attendees">${e.attending} attending</div>
+      </div>
+    </div>`).join('');
+  document.getElementById('vol-leaderboard').innerHTML=VOL_LEADERBOARD.map((v,i)=>`
+    <div class="leaderboard-row">
+      <div class="lb-rank ${i<3?'top':''}">${v.badge||i+1}</div>
+      <div class="lb-avatar" style="background:${v.color}">${v.avatar}</div>
+      <div>
+        <div class="lb-name">${v.name}</div>
+        <div class="lb-sub">${v.city}</div>
+      </div>
+      <div class="lb-points">${v.hours>0?v.hours+' hrs':'—'}</div>
+    </div>`).join('');
+}
+
+// ─── CHIP SELECT / FORM HELPERS ───────────────────────────────────────────────
+function selectChip(el,group){
+  const parent=el.parentElement;
+  parent.querySelectorAll('.choice-chip').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function uploadDoc(row,statusId){
+  const s=document.getElementById(statusId);
+  if(s){s.textContent='Uploaded ✓';s.className='doc-status-ok';}
+  showToast('Document uploaded ✓');
+}
+
+// ─── QUIZ ─────────────────────────────────────────────────────────────────────
+function answerQuiz(el,correct){
+  const opts=document.querySelectorAll('.quiz-option');
+  opts.forEach(o=>o.style.pointerEvents='none');
+  el.classList.add(correct?'correct':'wrong');
+  if(!correct){
+    const q=QUIZZES[quizIdx];
+    opts[q.correct].classList.add('correct');
+  }
+  showToast(correct?'✅ Correct! Great dog knowledge!':'❌ Not quite — check the highlighted answer');
+  setTimeout(()=>{
+    quizIdx=(quizIdx+1)%QUIZZES.length;
+    const q=QUIZZES[quizIdx];
+    document.getElementById('quiz-q').textContent=q.q;
+    document.getElementById('quiz-opts').innerHTML=q.opts.map((o,i)=>`<div class="quiz-option" onclick="answerQuiz(this,${i===q.correct})">${o}</div>`).join('');
+  },2500);
+}
+
+// ─── POLL ─────────────────────────────────────────────────────────────────────
+function votePoll(el,idx){
+  if(el.style.opacity==='0.5')return;
+  document.querySelectorAll('.poll-option').forEach(o=>{o.style.opacity='0.5';o.style.pointerEvents='none';});
+  el.style.opacity='1';
+  showToast('Vote recorded! Thanks for sharing 🗳️');
+}
+
+// ─── CLOCK ───────────────────────────────────────────────────────────────────
+function updateClock(){const n=new Date();document.getElementById('clock').textContent=n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0');}
+
+// ─── START ────────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
