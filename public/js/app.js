@@ -93,9 +93,7 @@ const MOCK_DATA = {
     { id: 'a4', title: 'Understanding indie dog behavior', category: 'Training', emoji: '🐕', read_time: '5 min', author: 'Meera Sundaram', summary: 'A guide to living with Indian street rescues', likes: 187, bg_color: '#2a2a1a' },
     { id: 'a5', title: 'Reading your dog body language', category: 'Tips', emoji: '🐾', read_time: '4 min', author: 'Dr. Anitha Rao', summary: 'Learn to understand what your dog is telling you', likes: 156, bg_color: '#1a2a2a' },
     { id: 'a6', title: 'India stray dog crisis: 62 million animals', category: 'Awareness', emoji: '🇮🇳', read_time: '7 min', author: 'PawFinder Team', summary: 'The numbers behind the problem and how adoption changes lives', likes: 631, bg_color: '#2a1a2a' }
-  ]
-};
-
+  ],
   applications: [
     { id: 'app1', dog_id: 'dog-1', dog_name: 'Bruno', dog_emoji: '🐕', shelter_name: 'Blue Cross of Coimbatore', status: 'approved', progress: 100, created_at: '2 days ago' },
     { id: 'app2', dog_id: 'dog-2', dog_name: 'Bella', dog_emoji: '🐕‍🦺', shelter_name: 'Kongu Animal Rescue', status: 'pending', progress: 50, created_at: '1 day ago' }
