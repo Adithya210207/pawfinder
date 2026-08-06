@@ -1,0 +1,53 @@
+{
+  "name": "pawfinder",
+  "version": "1.0.0",
+  "description": "PawFinder - Dog Adoption Platform",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "electron": "electron .",
+    "prebuild:electron": "node scripts/fetch-sqlite-electron.js",
+    "rebuild:node": "npm rebuild better-sqlite3",
+    "dist": "npm run prebuild:electron && electron-builder --win"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^11.6.0",
+    "express": "^4.21.0",
+    "express-session": "^1.18.1",
+    "multer": "^1.4.5-lts.1",
+    "pptxgenjs": "^4.0.1",
+    "socket.io": "^4.8.0",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "in.pawfinder.app",
+    "productName": "PawFinder",
+    "npmRebuild": false,
+    "files": [
+      "electron-main.js",
+      "server.js",
+      "database.js",
+      "middleware/**",
+      "routes/**",
+      "public/**"
+    ],
+    "asarUnpack": [
+      "node_modules/better-sqlite3/**"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        "zip"
+      ],
+      "artifactName": "PawFinder-${version}-win-${arch}.${ext}"
+    }
+  }
+}
